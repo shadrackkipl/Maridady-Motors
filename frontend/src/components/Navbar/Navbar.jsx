@@ -14,7 +14,7 @@ const navItems = [
 
 const Navbar = () => {
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-800 bg-black text-slate-100 shadow-lg backdrop-blur-sm">
+    <header className="sticky top-0 z-50 border-b border-slate-800 bg-[#2d2d2d] text-slate-100 shadow-lg backdrop-blur-sm">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-8 lg:px-12">
         <a href="/" className="flex items-center gap-3" aria-label="Maridady Motors home">
           <img src={MaridadyLogo} alt="Maridady Motors logo" className="h-10 w-auto" />
@@ -53,6 +53,7 @@ const Navbar = () => {
             Menu
           </button>
         </div>
+       
       </div>
     </header>
   );
