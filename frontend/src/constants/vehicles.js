@@ -7,8 +7,8 @@ import ToyotaNoah2019 from "../assets/Featured/ToyotaNoah2019.jpg";
 
 // Prices are in KES, mileage in km, engineCc in cubic centimetres.
 // Format these in the UI, not here.
-// TODO: confirm `fuel` and `drivetrain` for each vehicle against the
-// import documents before publishing. Fuel values are best guesses.
+// TODO: confirm `stock` and `drivetrain` for each vehicle against the
+// import documents before publishing. stock values are best guesses.
 export const featuredVehicles = [
   {
     id: 1,
@@ -20,7 +20,7 @@ export const featuredVehicles = [
     price: 1837500,
     mileage: 26000,
     engineCc: 1200,
-    fuel: "Petrol",
+    stock: "In Stock",
     drivetrain: "4WD",
   },
   {
@@ -33,7 +33,7 @@ export const featuredVehicles = [
     price: 2730000,
     mileage: 85000,
     engineCc: 1600,
-    fuel: "Petrol",
+    stock: "In Stock",
     drivetrain: "4WD",
   },
   {
@@ -46,7 +46,7 @@ export const featuredVehicles = [
     price: 1732500,
     mileage: 90000,
     engineCc: 1500,
-    fuel: "Petrol",
+    stock: "In Stock",
     drivetrain: "4WD",
   },
   {
@@ -59,7 +59,7 @@ export const featuredVehicles = [
     price: 3675000,
     mileage: 32000,
     engineCc: 2200,
-    fuel: "Diesel",
+    stock: "In Stock",
     drivetrain: "4WD",
   },
   {
@@ -72,7 +72,7 @@ export const featuredVehicles = [
     price: 2520000,
     mileage: 86000,
     engineCc: 2000,
-    fuel: "Petrol",
+    stock: "In Stock",
     drivetrain: "4WD",
   },
   {
@@ -85,7 +85,9 @@ export const featuredVehicles = [
     price: 2835000,
     mileage: 85000,
     engineCc: 2000,
-    fuel: "Petrol",
+    stock: "In Stock",
     drivetrain: "4WD",
   },
 ];
+
+

@@ -28,7 +28,7 @@ const VehicleCard = ({ vehicle, priority = false }) => {
     model,
     year,
     price,
-    fuel,
+    stock,
     mileage,
     engineCc,
     drivetrain,
@@ -52,9 +52,9 @@ const VehicleCard = ({ vehicle, priority = false }) => {
             className="h-full w-full object-cover"
           />
         )}
-        {fuel && (
+        {stock && (
           <span className="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-xs font-medium text-slate-800 shadow-sm backdrop-blur-sm">
-            {fuel}
+            {stock}
           </span>
         )}
       </div>
@@ -71,7 +71,7 @@ const VehicleCard = ({ vehicle, priority = false }) => {
           <Spec label="Mileage" value={formatKm(mileage)} />
           <Spec label="Engine" value={formatCc(engineCc)} />
           <Spec label="Drivetrain" value={drivetrain} />
-          <Spec label="Fuel" value={fuel} />
+          <Spec label="stock" value={stock} />
         </dl>
 
         <div className="mt-auto flex items-center justify-between gap-3 pt-4">
@@ -107,7 +107,7 @@ const FeaturedVehicles = () => {
           <header>
             <h2
               id="featured-vehicles-heading"
-              className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl"
+              className="text-2xl font-bold tracking-tight  text-black-900 sm:text-3xl"
             >
               Featured vehicles
             </h2>

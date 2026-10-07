@@ -3,6 +3,10 @@ import Navbar from "../components/Navbar/Navbar";
 import SearchCard from "../components/home/SearchCard";
 import SlideCard from "../components/home/SlideCard";
 import FeaturedVehicles from "../components/home/FeaturedVehicles";
+import OurPartners from "../components/home/OurPartners";
+import Suv from "../components/home/Suv"
+import Footer from "../components/Footer/footer";
+
 
 const Home = () => {
   const [appliedFilters, setAppliedFilters] = useState({});
@@ -24,6 +28,20 @@ const Home = () => {
         />
         <div className="w-full min-w-full">
           <FeaturedVehicles />
+        </div>
+
+        
+
+        <div className="w-full min-w-0 lg:col-span-2">
+          <Suv />
+        </div>
+
+        <div>
+          <OurPartners />
+        </div>
+
+        <div>
+          <Footer />
         </div>
       </main>
     </div>

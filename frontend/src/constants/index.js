@@ -1,13 +1,20 @@
 import ToyotaLogo from "../assets/CarLogos/Toyota.png";
 import NissanLogo from "../assets/CarLogos/Nissan.JPG";
 import MercedesBenzLogo from "../assets/CarLogos/Mercedes.png";
-import MazdaLogo from "../assets/CarLogos/Mazda.JPG";
+import MazdaLogo from "../assets/CarLogos/Mazda.png";
 import MitsubishiLogo from "../assets/CarLogos/Mistubishi.jpg";
 import SuzukiLogo from "../assets/CarLogos/Suzuki.JPG";
-import SubaruLogo from "../assets/CarLogos/Subaru.JPG";
+import SubaruLogo from "../assets/CarLogos/Subaru.png";
 import HondaLogo from "../assets/CarLogos/Honda.PNG";
 import IsuzuLogo from "../assets/CarLogos/Isuzu.png";
 import VolkswagenLogo from "../assets/CarLogos/Volkswagen.PNG";
+import LexusLogo from "../assets/CarLogos/Lexus.PNG";
+import VolvoLogo from "../assets/CarLogos/Volvo.PNG";
+import FordLogo from "../assets/CarLogos/Ford.PNG";
+import BmwLogo from "../assets/CarLogos/bmw.PNG";
+import AudiLogo from "../assets/CarLogos/Audi.PNG";
+import DaihatsuLogo from "../assets/CarLogos/Daihatsu.PNG";
+
 
 
 
@@ -71,6 +78,42 @@ import VolkswagenLogo from "../assets/CarLogos/Volkswagen.PNG";
     count: "41 vehicles",
     image: VolkswagenLogo,
     inventoryKeyByMake: "Volkswagen",
+  },
+  {
+    name: "Lexus",
+    count: "0 vehicles",
+    image: LexusLogo,
+    inventoryKeyByMake: "Lexus",
+  },
+  {
+    name: "Volvo",
+    count: "0 vehicles",
+    image: VolvoLogo,
+    inventoryKeyByMake: "Volvo",
+  },
+  {
+    name: "Ford",
+    count: "0 vehicles",
+    image: FordLogo,
+    inventoryKeyByMake: "Ford",
+  },
+  {
+    name: "BMW",
+    count: "0 vehicles",
+    image: BmwLogo,
+    inventoryKeyByMake: "BMW",
+  },
+  {
+    name: "Audi",
+    count: "0 vehicles",
+    image: AudiLogo,
+    inventoryKeyByMake: "Audi",
+  },
+  {
+    name: "Daihatsu",
+    count: "0 vehicles",
+    image: DaihatsuLogo,
+    inventoryKeyByMake: "Daihatsu",
   },
 ];
 

@@ -1,0 +1,118 @@
+import ToyotaLandCruiserPradoRed from "../assets/Suv/PradoRed.jpg";
+import ToyotaLandCruiserPradoBlack from "../assets/Suv/PradoBlack.jpg";
+import ToyotaLandCruiserPradoSilver from "../assets/Suv/PradoSilver.jpg";
+import ToyotaHarrier2020 from "../assets/Suv/ToyotaHarrier.jpg";
+import ToyotaPrado2020Gold from "../assets/Suv/PradoGold.jpg";
+import ToyotaPrado2020Black from "../assets/Suv/PradoBlack2020.jpg";
+import ToyotaPrado2023 from "../assets/Suv/ToyotaPrado2023.jpg";
+import Volvo from "../assets/Suv/volvoxc90.jpg";
+
+
+
+
+export const SuvVehicles = [
+  {
+    id: 1,
+    code: "E118-013",
+    image: ToyotaLandCruiserPradoRed,
+    brand: "Toyota",
+    model: "Land Cruiser Prado",
+    year: 2020,
+    price: 6825000,
+    mileage: 32000,
+    engineCc: 2700,
+   stock: "In Stock",
+    drivetrain: "4WD",
+  },
+  {
+    id: 2,
+    code: "E118-014",
+    image: ToyotaLandCruiserPradoBlack,
+    brand: "Toyota",
+    model: "Land Cruiser Prado",
+    year: 2020,
+    price: 8400000,
+    mileage: 21000,
+    engineCc: 2800,
+   stock: "In Stock",
+    drivetrain: "4WD",
+  },
+  {
+    id: 3,
+    code: "E118-010",
+    image: ToyotaLandCruiserPradoSilver,
+    brand: "Toyota",
+    model: "Land Cruiser Prado",
+    year: 2020,
+    price: 7875000,
+    mileage: 29000,
+    engineCc: 2700,
+   stock: "In Stock",
+    drivetrain: "4WD",
+  },
+  {
+    id: 4,
+    code: "E118-009",
+    image: ToyotaHarrier2020,
+    brand: "Toyota",
+    model: "Harrier",
+    year: 2020,
+    price: 5040000,
+    mileage: 62000,
+    engineCc: 2000,
+   stock: "In Stock",
+    drivetrain: "4WD",
+  },
+  {
+    id: 5,
+    code: "E118-023",
+    image: ToyotaPrado2020Gold,
+    brand: "Toyota",
+    model: "Land Cruiser Prado",
+    year: 2020,
+    price: 9555000,
+    mileage: 85000,
+    engineCc: 2800,
+   stock: "In Stock",
+    drivetrain: "4WD",
+  },
+  {
+    id: 6,
+    code: "E118-022",
+    image: ToyotaPrado2020Black,
+    brand: "Toyota",
+    model: "Land Cruiser Prado",
+    year: 2020,
+    price: 8295000,
+    mileage: 86000,
+    engineCc: 2800,
+   stock: "In Stock",
+    drivetrain: "4WD",
+  },
+   {
+    id: 7,
+    code: "E118-015",
+    image: ToyotaPrado2023,
+    brand: "Toyota",
+    model: "Land Cruiser Prado",
+    year: 2023,
+    price: 8505000,
+    mileage: 45000,
+    engineCc: 2700,
+    stock: "In Stock",
+    drivetrain: "4WD",
+  },
+   {
+    id: 8,
+    code: "E107-1559",
+    image: Volvo,
+    brand: "Volvo",
+    model: "xc90",
+    year: 2018,
+    price: 7491750,
+    mileage: 45000,
+    engineCc: 2000,
+    stock: "In Stock",
+    drivetrain: "4WD",
+  },
+];
