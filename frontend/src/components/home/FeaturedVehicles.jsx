@@ -84,7 +84,7 @@ const VehicleCard = ({ vehicle, priority = false }) => {
           <button
             href={`/vehicles/${code}`}
             aria-label={`View details for ${title}`}
-            className="rounded-lg bg-[#2d2d2d] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-800 focus-visible:ring-offset-2"
+            className="rounded-lg bg-[#2d2d2d] px-3 py-2 text-sm font-semibold text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-800 focus-visible:ring-offset-2"
           >
             View details
           </button>
