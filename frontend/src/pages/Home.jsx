@@ -13,19 +13,19 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-[#f3f0e6]">
       <Navbar />
-      <section className="w-290 ml-100 mt-10 lg:flex-1">
+      <section>
         <SlideCard />
       </section>
 
-      <main className="mx-auto flex w-full max-w-screen-2xl flex-col items-center gap-6 px-4 ml-4 -mt-130 pb-10 lg:flex-row lg:items-start lg:gap-8">
+      <main className="mx-auto grid w-full max-w-screen-2xl grid-cols-1 items-start gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-stretch lg:gap-8 lg:px-8">
         <SearchCard
           onApply={setAppliedFilters}
           onClear={() => setAppliedFilters({})}
         />
+        <div className="w-full min-w-full">
+          <FeaturedVehicles />
+        </div>
       </main>
-      <div className="ml-92 -mt-40">
-        <FeaturedVehicles />
-      </div>
     </div>
   );
 };

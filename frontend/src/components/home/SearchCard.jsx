@@ -43,19 +43,20 @@ const SearchCard = ({ onApply, onClear }) => {
   });
 
   return (
-    <div className="mt-0 flex h-auto min-h-[420px] w-full max-w-full flex-col overflow-hidden rounded-[18px] border border-[#d8d0c1] bg-white shadow-[0_12px_30px_rgba(0,0,0,0.14)] lg:mt-2 lg:h-[650px] lg:max-w-[360px] lg:shrink-0">
-      <div className="bg-[#2d2d2d] px-5 py-4">
+    <div className="mt-0 flex h-[min(72vh,650px)] w-full max-w-full flex-col overflow-hidden rounded-[18px] border border-[#d8d0c1] bg-white shadow-[0_12px_30px_rgba(0,0,0,0.14)] lg:mt-0 lg:h-full lg:max-w-[360px] lg:shrink-0">
+      <div className="shrink-0 bg-[#2d2d2d] px-4 py-4 sm:px-5">
         <h2 className="text-[17px] font-bold tracking-[-0.02em] text-white">
           Search By Make &amp; Model
         </h2>
       </div>
 
-      <div className="px-4 py-4">
+      <div className="shrink-0 px-4 py-4">
         <div className="rounded-[10px] border border-[#d5cdb8] bg-white px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
           <input
             type="text"
             id="vehicle-search"
             name="vehicle-search"
+            aria-label="Search vehicle makes and models"
             placeholder="Search makes..."
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
@@ -81,7 +82,7 @@ const SearchCard = ({ onApply, onClear }) => {
                   <button
                     type="button"
                     onClick={() => toggleMake(inventoryKey)}
-                    className="flex w-full items-center gap-3 py-[12px] text-left"
+                    className="flex min-h-12 w-full items-center gap-3 py-2 text-left"
                   >
                     <img
                       src={option.image}
@@ -135,7 +136,7 @@ const SearchCard = ({ onApply, onClear }) => {
                             <li key={model.name}>
                               <label
                                 htmlFor={checkboxId}
-                                className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-white/40"
+                                className="flex min-h-10 cursor-pointer items-center gap-2 rounded px-2 py-2 text-sm hover:bg-white/40"
                               >
                                 <input
                                   id={checkboxId}
@@ -164,18 +165,18 @@ const SearchCard = ({ onApply, onClear }) => {
           })}
         </ul>
       </div>
-      <div className="flex gap-3 border-black/50 bg-white px-4 py-3">
+      <div className="flex shrink-0 gap-3 border-black/50 bg-white px-4 py-3">
         <button
           type="button"
           onClick={applyFilters}
-          className="flex-1 rounded-md bg-[#2d2d2d] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#2d2d2d]-300"
+          className="min-h-11 flex-1 rounded-md bg-[#2d2d2d] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#2d2d2d]-300"
         >
           Apply
         </button>
         <button
           type="button"
           onClick={clearFilters}
-          className="flex-1 rounded-md bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-800 transition hover:bg-slate-300"
+          className="min-h-11 flex-1 rounded-md bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-800 transition hover:bg-slate-300"
         >
           Clear
         </button>
