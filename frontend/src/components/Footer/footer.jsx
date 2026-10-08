@@ -96,7 +96,7 @@ const Footer = () => {
         <div className="flex flex-col gap-5 rounded-2xl border border-white/10 bg-white/[0.06] px-5 py-6 shadow-[0_12px_32px_rgba(0,0,0,0.12)] backdrop-blur-sm sm:px-8 sm:py-8 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h3 className="mb-1.5 text-xl font-semibold text-[#fff7d6] sm:text-2xl">
-              <span aria-hidden="true">✨</span> Subscribe to Our Newsletter
+              <span aria-hidden="true"></span> Subscribe to Our Newsletter
             </h3>
             <p className="text-[#efe9dc]">
               Get the latest updates on new arrivals and exclusive deals.
@@ -139,7 +139,7 @@ const Footer = () => {
               MARIDADY MOTORS
             </span>
             <span className="border-t border-[#d8cdb6] pt-1 text-center text-[7px] font-medium tracking-[3px] text-[#f5f1e8]">
-              MOVE YOUR START
+              HOME OF SUV
             </span>
           </div>
 

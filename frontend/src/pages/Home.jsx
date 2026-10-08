@@ -3,7 +3,7 @@ import Navbar from "../components/Navbar/Navbar";
 import SearchCard from "../components/home/SearchCard";
 import SlideCard from "../components/home/SlideCard";
 import FeaturedVehicles from "../components/home/FeaturedVehicles";
-import OurPartners from "../components/home/OurPartners";
+import OurPartners from "../components/shared/OurPartners";
 import Suv from "../components/home/Suv"
 import Footer from "../components/Footer/footer";
 

@@ -1,5 +1,5 @@
 import React from 'react'
-import showroom from '../../assets/About/AboutUs.png'
+import showroom from '../../assets/About/showroom.jpg'
 
 const WhoAreWe = ({ image = showroom }) => {
   return (
