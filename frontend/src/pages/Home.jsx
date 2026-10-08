@@ -17,9 +17,9 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-[#f3f0e6]">
       <Navbar />
-      <section>
+      <div>
         <SlideCard />
-      </section>
+      </div>
 
       <main className="mx-auto grid w-full max-w-screen-2xl grid-cols-1 items-start gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-stretch lg:gap-8 lg:px-8">
         <SearchCard
@@ -36,14 +36,16 @@ const Home = () => {
           <Suv />
         </div>
 
-        <div>
+        
+      </main>
+
+      <div>
           <OurPartners />
         </div>
 
         <div>
           <Footer />
         </div>
-      </main>
     </div>
   );
 };

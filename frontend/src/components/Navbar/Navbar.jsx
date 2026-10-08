@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import MaridadyLogo from "../../assets/MaridadyLogo.png";
 
 const navItems = [
   "Home",
-  "About",
+  "About Us ",
   "Inventory",
   "Motorbikes",
   "Direct Importation",
@@ -13,6 +13,8 @@ const navItems = [
 ];
 
 const Navbar = () => {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <header className="sticky top-0 z-50 border-b border-slate-800 bg-[#2d2d2d] text-slate-100 shadow-lg backdrop-blur-sm">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-8 lg:px-12">
@@ -26,7 +28,7 @@ const Navbar = () => {
           </div>
         </a>
 
-        <nav aria-label="Main navigation" className="hidden items-center gap-6 lg:flex">
+        <nav aria-label="Main navigation" className="hidden items-center gap-6 xl:flex">
           {navItems.map((item) => (
             <a
               key={item}
@@ -47,14 +49,36 @@ const Navbar = () => {
           </a>
           <button
             type="button"
-            className="rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-amber-300 lg:hidden"
-            aria-label="Open menu"
+            onClick={() => setMenuOpen((open) => !open)}
+            className="rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-amber-300 xl:hidden"
+            aria-expanded={menuOpen}
+            aria-controls="mobile-navigation"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
           >
-            Menu
+            {menuOpen ? "Close" : "Menu"}
           </button>
         </div>
-       
+
       </div>
+      <nav
+        id="mobile-navigation"
+        aria-label="Mobile navigation"
+        className={`${menuOpen ? "block" : "hidden"} border-t border-slate-700 px-4 py-3 xl:hidden`}
+      >
+        <ul className="mx-auto grid max-w-7xl grid-cols-2 gap-1 sm:grid-cols-3">
+          {navItems.map((item) => (
+            <li key={item}>
+              <a
+                href="#"
+                onClick={() => setMenuOpen(false)}
+                className="block rounded-lg px-3 py-2 text-sm font-medium text-slate-200 transition-colors hover:bg-white/10 hover:text-amber-400"
+              >
+                {item.trim()}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
     </header>
   );
 };
