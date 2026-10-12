@@ -6,7 +6,7 @@ import MaridadyLogo from "../../assets/MaridadyLogo.png";
 const navItems = [
   { label: "Home", to: "/" },
   { label: "About Us", to: "/about" },
-  { label: "Stock List", to: "/stock" },
+  { label: "Stock List", to: "/car-listing" },
   {
     label: "Investment",
     children: [
@@ -16,7 +16,7 @@ const navItems = [
     ],
   },
   { label: "Motorbikes", to: "/motorbikes" },
-  { label: "Direct Importation", to: "/direct-importation" },
+  { label: "Direct Importation", to: "/importation" },
   { label: "Financing Plans", to: "/financing" },
   { label: "Sacco", to: "/sacco" },
 ];
