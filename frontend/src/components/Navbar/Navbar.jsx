@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { NavLink, Link } from "react-router-dom"; // remove if not using React Router
+import { NavLink, Link } from "react-router-dom"; 
 import MaridadyLogo from "../../assets/MaridadyLogo.png";
 
 // Items with `children` render as a dropdown. Add more children any time.
@@ -12,13 +12,11 @@ const navItems = [
     children: [
       { label: "Import To Sale", to: "/importers-club" },
         { label: "Smart Cab", to: "/smart-cab" },
-      { label: "Driving School", to: "/driving-school" },
-    ],
+          ],
   },
-  { label: "Motorbikes", to: "/motorbikes" },
-  { label: "Direct Importation", to: "/importation" },
-  { label: "Financing Plans", to: "/financing" },
-  { label: "Sacco", to: "/sacco" },
+  { label: "Direct Importation", to: "/direct-importation" },
+  { label: "Financing Plans", to: "/financing-plans" },
+  { label: "Driving School", to: "/driving-school" },
 ];
 
 const focusRing =

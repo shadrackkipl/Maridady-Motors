@@ -8,7 +8,7 @@ import WhoAreWe from '../components/About/WhoAreWe';
 
 const About = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#f5f5f0]">
       <Navbar />
       <main>
         <ImgCard />

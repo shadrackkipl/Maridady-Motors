@@ -1,5 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { Home, About, CarListing, Importation, Financing } from "./pages";
+import { Home, About, CarListing, Importation, Financing, Driving } from "./pages";
 
 const App = () => {
   return (
@@ -8,9 +8,9 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/car-listing" element={<CarListing />} />
-        <Route path="/financing" element={<Financing />} />
-      
-        <Route path="/importation" element={<Importation />} />
+        <Route path="/financing-plans" element={<Financing />} />
+        <Route path="/driving-school" element={<Driving />} />      
+        <Route path="/direct-importation" element={<Importation />} />
       </Routes>
     </BrowserRouter>
   );

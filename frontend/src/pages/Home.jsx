@@ -15,7 +15,7 @@ const Home = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#f3f0e6]">
+    <div className="min-h-screen bg-[#f5f5f0]">
       <Navbar />
       <div>
         <SlideCard />

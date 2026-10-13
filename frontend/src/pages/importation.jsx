@@ -10,7 +10,7 @@ import Enquiry from '../components/importation/Enquiry'
 
 function Importation() {
   return (
-    <div className="min-h-screen bg-[#f3f0e6] text-slate-800">
+    <div className="min-h-screen bg-[#f5f5f0] text-slate-800">
       <Navbar />
       <Hero />
       <Process />
