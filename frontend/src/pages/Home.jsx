@@ -1,11 +1,9 @@
 import React, { useState } from "react";
-import Navbar from "../components/Navbar/Navbar";
 import SearchCard from "../components/home/SearchCard";
 import SlideCard from "../components/home/SlideCard";
 import FeaturedVehicles from "../components/home/FeaturedVehicles";
-import OurPartners from "../components/shared/OurPartners";
 import Suv from "../components/home/Suv"
-import Footer from "../components/Footer/footer";
+
 
 
 const Home = () => {
@@ -16,7 +14,7 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-[#f5f5f0]">
-      <Navbar />
+     
       <div>
         <SlideCard />
       </div>
@@ -39,13 +37,7 @@ const Home = () => {
         
       </main>
 
-      <div>
-          <OurPartners />
-        </div>
-
-        <div>
-          <Footer />
-        </div>
+     
     </div>
   );
 };
