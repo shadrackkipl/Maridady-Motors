@@ -1,169 +1,144 @@
-import React, { useMemo, useState } from "react";
-import { SuvVehicles } from "../../constants/suv";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import axios from "axios";
 
-const formatPrice = (n) =>
-  new Intl.NumberFormat("en-KE", {
-    style: "currency",
-    currency: "KES",
-    maximumFractionDigits: 0,
-  }).format(n);
+const API_URL = (
+  import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"
+).replace(/\/+$/, "");
 
-const formatNumber = (n) => new Intl.NumberFormat("en-KE").format(n);
+const formatNumber = (value) => Number(value || 0).toLocaleString("en-KE");
 
-const SORTS = {
-  "price-asc": { label: "Price: low to high", fn: (a, b) => a.price - b.price },
-  "price-desc": { label: "Price: high to low", fn: (a, b) => b.price - a.price },
-  "mileage-asc": { label: "Lowest mileage", fn: (a, b) => a.mileage - b.mileage },
-  "year-desc": { label: "Newest first", fn: (a, b) => b.year - a.year },
+const getImageUrl = (path) => {
+  try {
+    return new URL(path, `${API_URL}/`).toString();
+  } catch {
+    return null;
+  }
 };
 
-const focusRing =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700";
-
 const Suv = () => {
-  const [query, setQuery] = useState("");
-  const [brand, setBrand] = useState("All");
-  const [sort, setSort] = useState("price-asc");
+  const [cars, setCars] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const brands = useMemo(
-    () => ["All", ...new Set(SuvVehicles.map((v) => v.brand))],
-    []
-  );
+  useEffect(() => {
+    const controller = new AbortController();
 
-  const visible = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return SuvVehicles.filter((v) => brand === "All" || v.brand === brand)
-      .filter(
-        (v) =>
-          !q ||
-          `${v.brand} ${v.model} ${v.year} ${v.code}`.toLowerCase().includes(q)
-      )
-      .sort(SORTS[sort].fn);
-  }, [query, brand, sort]);
+    axios
+      .get(`${API_URL}/api/cars/`, {
+        params: { body_type: "suv" },
+        signal: controller.signal,
+      })
+      .then((response) => {
+        setCars(Array.isArray(response.data) ? response.data : []);
+      })
+      .catch((requestError) => {
+        if (axios.isCancel(requestError)) return;
+        console.error("Error fetching cars:", requestError);
+        setError("Unable to load vehicles. Please try again later.");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
 
-  const reset = () => {
-    setQuery("");
-    setBrand("All");
-    setSort("price-asc");
-  };
+    return () => controller.abort();
+  }, []);
+
+  if (loading) {
+    return (
+      <p className="vehicle-listing-message">
+        Loading Maridady Motors inventory...
+      </p>
+    );
+  }
+
+  if (error) {
+    return (
+      <p className="vehicle-listing-message" role="alert">
+        {error}
+      </p>
+    );
+  }
 
   return (
-    <section className="mx-auto max-w-6xl bg-slate-50 px-5 pb-16 pt-10 text-slate-900">
-      <header className="mb-6 flex items-baseline justify-between gap-4">
-        <h1 className="text-3xl font-extrabold tracking-tight sm:text-5xl">
-          SUVs
-        </h1>
-        <p className="text-slate-500">
-          {visible.length} of {SuvVehicles.length} vehicles
+    <main className="vehicle-listing">
+      <h1 className="vehicle-listing-title">SUVs</h1>
+      {cars.length === 0 ? (
+        <p className="vehicle-listing-empty">
+          No SUVs are currently available.
         </p>
-      </header>
-
-      <div className="mb-8 grid grid-cols-1 items-center gap-3 md:grid-cols-[minmax(0,1fr)_auto_auto]">
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by model, year or code"
-          aria-label="Search SUVs"
-          className={`h-11 rounded-md border border-slate-300 bg-white px-3.5 ${focusRing}`}
-        />
-
-        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter by brand">
-          {brands.map((b) => (
-            <button
-              key={b}
-              type="button"
-              aria-pressed={b === brand}
-              onClick={() => setBrand(b)}
-              className={`h-11 rounded-md border px-4 ${focusRing} ${
-                b === brand
-                  ? "border-slate-900 bg-slate-900 text-white"
-                  : "border-slate-300 bg-white hover:bg-slate-100"
-              }`}
-            >
-              {b}
-            </button>
-          ))}
-        </div>
-
-        <select
-          value={sort}
-          onChange={(e) => setSort(e.target.value)}
-          aria-label="Sort vehicles"
-          className={`h-11 rounded-md border border-slate-300 bg-white px-3 ${focusRing}`}
-        >
-          {Object.entries(SORTS).map(([key, { label }]) => (
-            <option key={key} value={key}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {visible.length === 0 ? (
-        <div className="px-4 py-12 text-center text-slate-500">
-          <p className="mb-4">No SUVs match your search.</p>
-          <button
-            type="button"
-            onClick={reset}
-            className={`h-11 rounded-md border border-slate-300 bg-white px-4 hover:bg-slate-100 ${focusRing}`}
-          >
-            Clear filters
-          </button>
-        </div>
       ) : (
-        <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {visible.map((v) => {
-            const inStock = v.stock === "In Stock";
+        <div className="vehicle-grid">
+          {cars.map((car) => {
+            const imageUrl = car.image ? getImageUrl(car.image) : null;
+
             return (
-              <li
-                key={v.id}
-                className="overflow-hidden rounded-md border border-slate-200 bg-white"
-              >
-                <div className="relative aspect-[4/3] bg-slate-200">
-                  <img
-                    src={v.image}
-                    alt={`${v.year} ${v.brand} ${v.model}`}
-                    loading="lazy"
-                    className="h-full w-full object-cover"
-                  />
-                  <span
-                    className={`absolute left-3 top-3 rounded px-2.5 py-1 text-xs font-semibold text-white ${
-                      inStock ? "bg-emerald-700" : "bg-red-700"
-                    }`}
-                  >
-                    {v.stock}
-                  </span>
+              <article className="vehicle-card group" key={car.id}>
+                <div className="vehicle-card-image">
+                  {imageUrl ? (
+                    <img
+                      src={imageUrl}
+                      alt={`${car.year} ${car.make} ${car.model_name}`}
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="vehicle-card-no-image">No Image</div>
+                  )}
+                  <span className="vehicle-status">In Stock</span>
                 </div>
 
-                <div className="px-4 pb-5 pt-4">
-                  <h2 className="text-lg font-bold">
-                    {v.year} {v.brand} {v.model}
+                <div className="vehicle-card-content">
+                  <h2 className="vehicle-name">
+                    {car.year} {car.make} {car.model_name}
                   </h2>
-                  <p className="mb-4 mt-1 text-2xl font-extrabold tabular-nums text-blue-700">
-                    {formatPrice(v.price)}
+                  <p className="vehicle-stock">
+                    Stock no. {car.stock_number || "Not assigned"}
                   </p>
 
-                  <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-slate-200 pt-4">
-                    {[
-                      ["Mileage", `${formatNumber(v.mileage)} km`],
-                      ["Engine", `${formatNumber(v.engineCc)} cc`],
-                      ["Drive", v.drivetrain],
-                      ["Code", v.code],
-                    ].map(([label, value]) => (
-                      <div key={label}>
-                        <dt className="text-xs text-slate-500">{label}</dt>
-                        <dd className="mt-0.5 font-semibold">{value}</dd>
-                      </div>
-                    ))}
-                  </dl>
+                  <div className="vehicle-specifications">
+                    <div>
+                      <span>Mileage</span>
+                      <strong>{formatNumber(car.mileage)} km</strong>
+                    </div>
+                    <div>
+                      <span>Engine</span>
+                      <strong>
+                        {car.engine_capacity
+                          ? `${formatNumber(car.engine_capacity)} cc`
+                          : "—"}
+                      </strong>
+                    </div>
+                    <div>
+                      <span>Drivetrain</span>
+                      <strong>{car.drivetrain || "—"}</strong>
+                    </div>
+                    <div>
+                      <span>Make</span>
+                      <strong>{car.make}</strong>
+                    </div>
+                  </div>
+
+                  <div className="vehicle-card-footer">
+                    <div>
+                      <span className="vehicle-price-label">Price</span>
+                      <strong className="vehicle-price">
+                        KES {formatNumber(car.price)}
+                      </strong>
+                    </div>
+                    <Link
+                      className="vehicle-details-button"
+                      to={`/cars/${car.id}`}
+                    >
+                      View details
+                    </Link>
+                  </div>
                 </div>
-              </li>
+              </article>
             );
           })}
-        </ul>
+        </div>
       )}
-    </section>
+    </main>
   );
 };
 
