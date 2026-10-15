@@ -37,6 +37,7 @@ class CarImageInline(TabularInline):
 @admin.register(Car)
 class CarAdmin(ModelAdmin):
     inlines = [CarImageInline]
+    filter_horizontal = ('sales_representatives',)
 
     list_display = (
         'image_thumbnail', 'stock_number', 'make', 'model_name', 'year',
@@ -65,6 +66,10 @@ class CarAdmin(ModelAdmin):
         }),
         ('Description & features', {
             'fields': ('description', 'features', 'equipment'),
+        }),
+        ('Sales representatives', {
+            'fields': ('sales_representatives',),
+            'description': 'Choose who customers should contact about this vehicle.',
         }),
         ('Availability', {
             'fields': ('is_available',),

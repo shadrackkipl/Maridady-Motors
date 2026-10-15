@@ -1,3 +1,4 @@
+# cars/models.py
 from django.db import models
 
 
@@ -6,6 +7,7 @@ class Car(models.Model):
         SUV = "suv", "SUV"
         SEDAN = "sedan", "Sedan"
         HATCHBACK = "hatchback", "Hatchback"
+        STATION_WAGON = "station_wagon", "Station Wagon"
         PICKUP = "pickup", "Pickup"
         VAN = "van", "Van"
         OTHER = "other", "Other"
@@ -86,6 +88,13 @@ class Car(models.Model):
             ("Electric", "Electric"),
         ],
         default="Petrol",
+    )
+
+    sales_representatives = models.ManyToManyField(
+        "SalesRepresentative",
+        blank=True,
+        related_name="cars",
+        help_text="Who customers should contact about this vehicle",
     )
 
     is_available = models.BooleanField(default=True)

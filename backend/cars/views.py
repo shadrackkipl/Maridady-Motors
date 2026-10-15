@@ -1,5 +1,6 @@
 # cars/views.py
 from django.shortcuts import get_object_or_404
+from django.db.models import Prefetch
 from rest_framework import status
 from rest_framework.decorators import (
     api_view,
@@ -13,13 +14,19 @@ from rest_framework.response import Response
 from .models import Car, SalesRepresentative
 from .serializers import CarSerializer, SalesRepresentativeSerializer
 
+# Only show active sales representatives on vehicles
+ACTIVE_REPS = Prefetch(
+    'sales_representatives',
+    queryset=SalesRepresentative.objects.filter(is_active=True),
+)
+
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def car_list(request):
     cars = (
         Car.objects.filter(is_available=True)
-        .prefetch_related('images')
+        .prefetch_related('images', ACTIVE_REPS)
         .order_by('-created_at')
     )
 
@@ -47,7 +54,9 @@ def car_list(request):
 @permission_classes([AllowAny])
 def car_detail(request, pk):
     car = get_object_or_404(
-        Car.objects.prefetch_related('images'), pk=pk, is_available=True
+        Car.objects.prefetch_related('images', ACTIVE_REPS),
+        pk=pk,
+        is_available=True,
     )
     serializer = CarSerializer(car, context={'request': request})
     return Response(serializer.data)

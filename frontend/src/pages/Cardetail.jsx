@@ -25,7 +25,7 @@ const getImageUrl = (path) => {
 
 const TABS = [
   { id: "overview", label: "Overview" },
-  { id: "specifications", label: "Specifications" },
+  { id: "specifications", label: "Specs" },
   { id: "features", label: "Features" },
 ];
 
@@ -213,29 +213,10 @@ const CarDetail = () => {
   const [copied, setCopied] = useState(false);
   const [showroomOpen, setShowroomOpen] = useState(isOpenNow);
 
-  const [salesReps, setSalesReps] = useState([]);
-
   // Keep the Open/Closed badge current
   useEffect(() => {
     const timer = setInterval(() => setShowroomOpen(isOpenNow()), 60000);
     return () => clearInterval(timer);
-  }, []);
-
-  // Sales representatives are managed in the Django admin
-  useEffect(() => {
-    const controller = new AbortController();
-
-    axios
-      .get(`${API_URL}/api/sales-reps/`, { signal: controller.signal })
-      .then((response) =>
-        setSalesReps(Array.isArray(response.data) ? response.data : []),
-      )
-      .catch((requestError) => {
-        if (axios.isCancel(requestError)) return;
-        console.error("Error fetching sales representatives:", requestError);
-      });
-
-    return () => controller.abort();
   }, []);
 
   useEffect(() => {
@@ -311,9 +292,9 @@ const CarDetail = () => {
 
   if (error || !car) {
     return (
-      <main className="mx-auto max-w-7xl px-4 py-4">
+      <main className="mx-auto max-w-7xl px-3 py-4 sm:px-4">
         <button
-          className="mb-3 text-sm text-pink-600 hover:underline"
+          className="mb-3 text-sm text-blue-600 hover:underline"
           onClick={() => navigate(-1)}
           type="button"
         >
@@ -327,6 +308,9 @@ const CarDetail = () => {
   }
 
   const title = `${car.year} ${car.make} ${car.model_name}`;
+
+  // Chosen per vehicle in the Django admin
+  const salesReps = car.sales_representatives || [];
 
   const whatsappLink = (text) =>
     `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
@@ -395,11 +379,12 @@ const CarDetail = () => {
     ? car.equipment_list
     : car.feature_list || [];
 
+  // Larger tap target on touch devices
   const arrowClass =
-    "absolute top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-2xl leading-none shadow hover:bg-white";
+    "absolute top-1/2 flex h-9 w-9 sm:h-10 sm:w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-2xl leading-none shadow hover:bg-white";
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-4">
+    <main className="mx-auto max-w-7xl px-3 py-4 sm:px-4">
       <button
         className="mb-3 text-sm text-blue-600 hover:underline"
         onClick={() => navigate(-1)}
@@ -408,11 +393,11 @@ const CarDetail = () => {
         ← Back to listings
       </button>
 
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-5">
         {/* Gallery */}
         <section
           aria-label="Vehicle photos"
-          className="rounded-xl bg-white p-2 shadow-sm"
+          className="rounded-xl bg-white p-1.5 shadow-sm sm:p-2"
         >
           <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-gray-200">
             {images.length > 0 ? (
@@ -431,7 +416,7 @@ const CarDetail = () => {
               <>
                 <button
                   aria-label="Previous photo"
-                  className={`${arrowClass} left-3`}
+                  className={`${arrowClass} left-2 sm:left-3`}
                   onClick={showPrevious}
                   type="button"
                 >
@@ -439,7 +424,7 @@ const CarDetail = () => {
                 </button>
                 <button
                   aria-label="Next photo"
-                  className={`${arrowClass} right-3`}
+                  className={`${arrowClass} right-2 sm:right-3`}
                   onClick={showNext}
                   type="button"
                 >
@@ -450,22 +435,22 @@ const CarDetail = () => {
 
             {images.length > 0 && (
               <>
-                <span className="absolute bottom-3 left-3 rounded-full bg-black/75 px-2.5 py-0.5 text-xs text-white">
+                <span className="absolute bottom-2 left-2 rounded-full bg-black/75 px-2.5 py-0.5 text-[11px] text-white sm:bottom-3 sm:left-3">
                   {activeImage + 1}/{images.length}
                 </span>
                 <button
-                  className="absolute bottom-3 right-3 rounded-full bg-white/90 px-3 py-1.5 text-xs font-medium shadow hover:bg-white"
+                  className="absolute bottom-2 right-2 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium shadow hover:bg-white sm:bottom-3 sm:right-3 sm:px-3 sm:py-1.5 sm:text-xs"
                   onClick={() => setLightboxOpen(true)}
                   type="button"
                 >
-                  Fullscreen
+                  ⛶ Fullscreen
                 </button>
               </>
             )}
           </div>
 
           {images.length > 1 && (
-            <div className="mt-2 grid grid-cols-4 gap-2 sm:grid-cols-6">
+            <div className="mt-2 grid grid-cols-3 gap-1.5 sm:grid-cols-5 sm:gap-2 lg:grid-cols-6">
               {images.map((src, index) => (
                 <button
                   aria-label={`Show photo ${index + 1}`}
@@ -492,11 +477,11 @@ const CarDetail = () => {
 
         {/* Sidebar */}
         <aside className="grid gap-4">
-          <div className="rounded-xl bg-white p-4 shadow-sm">
+          <div className="rounded-xl bg-white p-3 shadow-sm sm:p-4">
             <div className="flex items-center justify-between gap-2">
               <div className="flex flex-wrap gap-1.5">
                 {car.condition && (
-                  <span className="rounded bg-orange-500 px-2 py-0.5 text-[11px] font-semibold text-white">
+                  <span className="rounded bg-pink-500 px-2 py-0.5 text-[11px] font-semibold text-white">
                     {car.condition}
                   </span>
                 )}
@@ -507,7 +492,7 @@ const CarDetail = () => {
                 )}
               </div>
               <button
-                className="rounded-md border border-gray-300 bg-white px-2.5 py-1 text-xs hover:bg-gray-50"
+                className="shrink-0 rounded-md border border-gray-300 bg-white px-2.5 py-1 text-xs hover:bg-gray-50"
                 onClick={handleShare}
                 type="button"
               >
@@ -515,14 +500,14 @@ const CarDetail = () => {
               </button>
             </div>
 
-            <h1 className="mb-1 mt-3 text-xl font-bold text-gray-900">
+            <h1 className="mb-1 mt-3 text-xl font-bold leading-tight text-gray-900 sm:text-2xl">
               {title}
             </h1>
             <p className="text-xs text-gray-500">
               Stock no. {car.stock_number || "—"}
             </p>
 
-            <p className="my-3 text-2xl font-bold text-gray-900">
+            <p className="my-3 text-2xl font-bold text-gray-900 sm:text-3xl">
               KES {formatNumber(car.price)}
             </p>
 
@@ -536,7 +521,7 @@ const CarDetail = () => {
             </a>
 
             <div className="my-4 grid grid-cols-2 gap-2">
-              <div className="grid gap-0.5 rounded-lg bg-gray-50 p-3 text-center">
+              <div className="grid gap-0.5 rounded-lg bg-gray-50 p-2.5 text-center sm:p-3">
                 <span className="text-[11px] text-gray-500">Engine</span>
                 <strong className="text-[13px]">
                   {car.engine_capacity
@@ -544,7 +529,7 @@ const CarDetail = () => {
                     : "—"}
                 </strong>
               </div>
-              <div className="grid gap-0.5 rounded-lg bg-gray-50 p-3 text-center">
+              <div className="grid gap-0.5 rounded-lg bg-gray-50 p-2.5 text-center sm:p-3">
                 <span className="text-[11px] text-gray-500">Transmission</span>
                 <strong className="text-[13px]">
                   {car.transmission || "—"}
@@ -554,7 +539,9 @@ const CarDetail = () => {
 
             <a
               className="block rounded-md bg-gray-700 p-3 text-center text-[13px] font-semibold text-white hover:bg-gray-900"
-              href={WHATSAPP_ASK_PRICE_LINK}
+              href={whatsappLink(
+                `Hi Maridady Motors, I'm interested in the ${title} (Stock no. ${car.stock_number}). Is it still available?`,
+              )}
               rel="noopener noreferrer"
               target="_blank"
             >
@@ -568,7 +555,7 @@ const CarDetail = () => {
               {TABS.map((tab) => (
                 <button
                   aria-selected={activeTab === tab.id}
-                  className={`px-2 py-3 text-xs ${
+                  className={`px-1.5 py-3 text-[11px] sm:px-2 sm:text-xs ${
                     activeTab === tab.id
                       ? "bg-gray-700 font-semibold text-white"
                       : "bg-white text-gray-700 hover:bg-gray-50"
@@ -583,27 +570,27 @@ const CarDetail = () => {
               ))}
             </div>
 
-            <div className="p-4" role="tabpanel">
+            <div className="p-3 sm:p-4" role="tabpanel">
               {activeTab === "overview" && (
                 <div className="grid gap-5">
                   <section>
                     <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-gray-900">
                       <Icon name="wrench" /> Key Specifications
                     </h2>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
                       {keySpecs.map((spec) => (
                         <div
-                          className="flex items-start gap-3 rounded-lg bg-gray-50 p-3"
+                          className="flex items-start gap-2 rounded-lg bg-gray-50 p-2.5 sm:gap-3 sm:p-3"
                           key={spec.label}
                         >
-                          <span className="mt-0.5 text-gray-600">
+                          <span className="mt-0.5 shrink-0 text-gray-600">
                             <Icon name={spec.icon} />
                           </span>
                           <div className="min-w-0">
                             <span className="block text-[11px] text-gray-500">
                               {spec.label}
                             </span>
-                            <strong className="block truncate text-[13px] text-gray-900">
+                            <strong className="block truncate text-[12px] text-gray-900 sm:text-[13px]">
                               {spec.value}
                             </strong>
                           </div>
@@ -622,27 +609,6 @@ const CarDetail = () => {
                         : "No description provided."}
                     </p>
                   </section>
-
-                  {car.feature_list?.length > 0 && (
-                    <section>
-                      <h2 className="mb-2 flex items-center gap-2 text-sm font-bold text-gray-900">
-                        <Icon name="check" /> Top Features
-                      </h2>
-                      <ul className="grid gap-2 sm:grid-cols-2">
-                        {car.feature_list.map((feature) => (
-                          <li
-                            className="flex items-center gap-2 text-[13px] text-gray-700"
-                            key={feature}
-                          >
-                            <span className="text-green-600">
-                              <Icon className="h-4 w-4 shrink-0" name="check" />
-                            </span>
-                            {feature}
-                          </li>
-                        ))}
-                      </ul>
-                    </section>
-                  )}
                 </div>
               )}
 
@@ -679,7 +645,7 @@ const CarDetail = () => {
                           className="flex items-center gap-3 border-b border-gray-100 py-3 text-[13px] text-gray-700 last:border-b-0"
                           key={item}
                         >
-                          <span className="text-gray-600">
+                          <span className="shrink-0 text-gray-600">
                             <Icon className="h-4 w-4 shrink-0" name="check" />
                           </span>
                           {item}
@@ -698,11 +664,13 @@ const CarDetail = () => {
         </aside>
       </div>
 
-      {/* Opening times & sales representatives */}
-      <div className="mt-5 grid gap-5 md:grid-cols-2">
-        <section className="rounded-xl bg-white p-5 shadow-sm">
+      {/* Opening times & sales representatives — clean full-width row */}
+      <div className="mt-5 grid gap-4 md:grid-cols-2 md:gap-5 lg:mt-6">
+        <section className="rounded-xl bg-white p-4 shadow-sm sm:p-5">
           <div className="flex flex-wrap items-center gap-3">
-            <h2 className="text-lg font-bold text-gray-900">Opening times</h2>
+            <h2 className="text-base font-bold text-gray-900 sm:text-lg">
+              Opening times
+            </h2>
             <span className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-2 py-0.5 text-[10px] font-semibold text-gray-700">
               <span aria-hidden="true">🇰🇪</span> Commercial
             </span>
@@ -711,7 +679,7 @@ const CarDetail = () => {
           <span
             className={`mt-3 inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
               showroomOpen
-                ? "bg-green-100 text-green-700"
+                ? "bg-pink-100 text-pink-700"
                 : "bg-red-100 text-red-600"
             }`}
           >
@@ -725,7 +693,7 @@ const CarDetail = () => {
                 key={slot.label}
               >
                 <dt className="text-gray-500">{slot.label}:</dt>
-                <dd className="font-bold text-gray-900">
+                <dd className="text-right font-bold text-gray-900">
                   {formatTime(slot.open)} - {formatTime(slot.close)}
                 </dd>
               </div>
@@ -737,9 +705,9 @@ const CarDetail = () => {
           </dl>
         </section>
 
-        <section className="rounded-xl bg-white p-5 shadow-sm">
+        <section className="rounded-xl bg-white p-4 shadow-sm sm:p-5">
           <div className="flex flex-wrap items-center gap-3">
-            <h2 className="text-lg font-bold text-gray-900">
+            <h2 className="text-base font-bold text-gray-900 sm:text-lg">
               Sales representatives
             </h2>
             <span className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-2 py-0.5 text-[10px] font-semibold text-gray-700">
@@ -749,7 +717,7 @@ const CarDetail = () => {
 
           {salesReps.length === 0 && (
             <p className="mt-4 text-[13px] text-gray-500">
-              No sales representatives listed yet.
+              No sales representative assigned to this vehicle yet.
             </p>
           )}
 
@@ -759,24 +727,24 @@ const CarDetail = () => {
                 className="flex items-center justify-between gap-3"
                 key={rep.id}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex min-w-0 items-center gap-3">
                   {rep.photo ? (
                     <img
                       alt={rep.name}
-                      className="h-10 w-10 rounded-full object-cover"
+                      className="h-10 w-10 shrink-0 rounded-full object-cover"
                       src={getImageUrl(rep.photo)}
                     />
                   ) : (
-                    <span className="grid h-10 w-10 place-items-center rounded-full bg-gray-200 text-xs font-bold text-gray-600">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gray-200 text-xs font-bold text-gray-600">
                       {getInitials(rep.name)}
                     </span>
                   )}
-                  <span className="text-sm font-semibold text-gray-900">
+                  <span className="truncate text-sm font-semibold text-gray-900">
                     {rep.name}
                   </span>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex shrink-0 gap-2">
                   {rep.phone && (
                     <a
                       aria-label={`Call ${rep.name}`}
@@ -817,7 +785,7 @@ const CarDetail = () => {
         >
           <button
             aria-label="Close photo viewer"
-            className="absolute right-5 top-4 text-4xl leading-none text-white"
+            className="absolute right-4 top-3 text-4xl leading-none text-white sm:right-5 sm:top-4"
             onClick={() => setLightboxOpen(false)}
             type="button"
           >
@@ -826,7 +794,7 @@ const CarDetail = () => {
           {images.length > 1 && (
             <button
               aria-label="Previous photo"
-              className={`${arrowClass} left-4`}
+              className={`${arrowClass} left-3 sm:left-4`}
               onClick={(event) => {
                 event.stopPropagation();
                 showPrevious();
@@ -845,7 +813,7 @@ const CarDetail = () => {
           {images.length > 1 && (
             <button
               aria-label="Next photo"
-              className={`${arrowClass} right-4`}
+              className={`${arrowClass} right-3 sm:right-4`}
               onClick={(event) => {
                 event.stopPropagation();
                 showNext();
