@@ -10,6 +10,8 @@ class Car(models.Model):
         STATION_WAGON = "station_wagon", "Station Wagon"
         PICKUP = "pickup", "Pickup"
         VAN = "van", "Van"
+        MINIVAN = "minivan", "Minivan"
+        COMMERCIAL = "commercial", "Commercial Vehicle"
         OTHER = "other", "Other"
 
     class Condition(models.TextChoices):
