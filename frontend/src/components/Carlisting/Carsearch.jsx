@@ -11,12 +11,7 @@ const EMPTY_FILTERS = { make: "", bodyType: "", minPrice: "", maxPrice: "" };
 const fieldClass =
   "w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-700";
 
-/**
- * Search bar for make, car type and price range.
- * Results appear below it as you change the filters. `onActiveChange`
- * is called with true while any filter is set, so the parent page can
- * hide its category sections and show only the results.
- */
+
 const CarSearch = ({ onActiveChange }) => {
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);

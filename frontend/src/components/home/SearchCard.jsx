@@ -1,28 +1,118 @@
-import React, { useState } from "react";
-import { makeOptions, vehicleInventory } from "../../constants";
+import React, { useEffect, useMemo, useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { makeOptions } from "../../constants";
+import { buildMakeGroups, selectionToParam } from "../../constants";
+const API_URL = (
+  import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"
+).replace(/\/+$/, "");
 
-const SearchCard = ({ onApply, onClear }) => {
-  const [selectedModels, setSelectedModels] = useState({});
+/**
+ * Make & model picker built from the cars actually in stock.
+ *
+ * - `cars` (optional): cars already loaded by the parent. If omitted, the
+ *   card loads them from the API itself (use this on the home page).
+ * - `showEmptyMakes`: also list makes with no cars, as "0 vehicles".
+ * - `applyPath`: if set (e.g. "/car-listing"), Apply opens that page with the
+ *   chosen models in the URL (?models=...), which the listing page reads.
+ * - `initialSelection`: models to tick when the card first appears.
+ * - `onApply(selection, names)`: `selection` is
+ *   { [makeKey]: [modelKey, ...] } (normalised keys, used for filtering) and
+ *   `names` is { "Toyota": ["RAV4", ...] } with the readable names.
+ */
+const SearchCard = ({
+  cars: carsProp,
+  showEmptyMakes = false,
+  applyPath,
+  initialSelection,
+  onApply,
+  onClear,
+}) => {
+  const navigate = useNavigate();
+  const [fetchedCars, setFetchedCars] = useState([]);
+  const [loading, setLoading] = useState(carsProp === undefined);
+  const [loadError, setLoadError] = useState(false);
+  const [selectedModels, setSelectedModels] = useState(initialSelection ?? {});
   const [expandedMake, setExpandedMake] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    if (carsProp !== undefined) return undefined;
+
+    const controller = new AbortController();
+
+    axios
+      .get(`${API_URL}/api/cars/`, { signal: controller.signal })
+      .then((response) => {
+        setFetchedCars(Array.isArray(response.data) ? response.data : []);
+      })
+      .catch((requestError) => {
+        if (axios.isCancel(requestError)) return;
+        console.error("Error loading vehicles for search:", requestError);
+        setLoadError(true);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [carsProp]);
+
+  const cars = carsProp ?? fetchedCars;
+
+  const groups = useMemo(
+    () =>
+      buildMakeGroups(cars, makeOptions, { includeEmpty: showEmptyMakes }),
+    [cars, showEmptyMakes]
+  );
 
   const toggleMake = (makeKey) => {
     setExpandedMake((current) => (current === makeKey ? null : makeKey));
   };
 
-  const toggleModel = (makeKey, modelName) => {
+  const toggleModel = (makeKey, modelKey) => {
     setSelectedModels((currentSelection) => {
       const makeModels = currentSelection[makeKey] ?? [];
-      const nextModels = makeModels.includes(modelName)
-        ? makeModels.filter((model) => model !== modelName)
-        : [...makeModels, modelName];
+      const nextModels = makeModels.includes(modelKey)
+        ? makeModels.filter((model) => model !== modelKey)
+        : [...makeModels, modelKey];
 
       return { ...currentSelection, [makeKey]: nextModels };
     });
   };
 
+  const toggleAllModels = (group) => {
+    setSelectedModels((currentSelection) => {
+      const current = currentSelection[group.key] ?? [];
+      const allKeys = group.models.map((model) => model.key);
+      const allChecked =
+        allKeys.length > 0 && allKeys.every((key) => current.includes(key));
+
+      return { ...currentSelection, [group.key]: allChecked ? [] : allKeys };
+    });
+  };
+
   const applyFilters = () => {
-    onApply?.(selectedModels);
+    const selectedNames = {};
+    groups.forEach((group) => {
+      const keys = selectedModels[group.key] ?? [];
+      if (keys.length > 0) {
+        selectedNames[group.name] = group.models
+          .filter((model) => keys.includes(model.key))
+          .map((model) => model.name);
+      }
+    });
+
+    onApply?.(selectedModels, selectedNames);
+
+    if (applyPath) {
+      const param = selectionToParam(selectedModels);
+      navigate(
+        param
+          ? `${applyPath}?${new URLSearchParams({ models: param }).toString()}`
+          : applyPath
+      );
+    }
   };
 
   const clearFilters = () => {
@@ -32,18 +122,15 @@ const SearchCard = ({ onApply, onClear }) => {
   };
 
   const query = searchQuery.trim().toLowerCase();
-  const filteredMakes = makeOptions.filter((option) => {
-    const inventoryKey = option.inventoryKeyByMake ?? option.name;
-    const models = vehicleInventory[inventoryKey] ?? [];
-    return (
+  const visibleGroups = groups.filter(
+    (group) =>
       !query ||
-      option.name.toLowerCase().includes(query) ||
-      models.some((model) => model.name.toLowerCase().includes(query))
-    );
-  });
+      group.name.toLowerCase().includes(query) ||
+      group.models.some((model) => model.name.toLowerCase().includes(query))
+  );
 
   return (
-    <div className="mt-0 flex h-[min(72vh,650px)] w-full max-w-full flex-col overflow-hidden rounded-[18px] border border-[#d8d0c1] bg-white shadow-[0_12px_30px_rgba(0,0,0,0.14)] lg:mt-0 lg:h-full lg:max-w-[360px] lg:shrink-0">
+    <div className="mt-0 flex  w-full max-w-full flex-col overflow-hidden rounded-[18px] border border-[#d8d0c1] bg-white shadow-[0_12px_30px_rgba(0,0,0,0.14)]">
       <div className="shrink-0 bg-[#2d2d2d] px-4 py-4 sm:px-5">
         <h2 className="text-[17px] font-bold tracking-[-0.02em] text-white">
           Search By Make &amp; Model
@@ -57,7 +144,7 @@ const SearchCard = ({ onApply, onClear }) => {
             id="vehicle-search"
             name="vehicle-search"
             aria-label="Search vehicle makes and models"
-            placeholder="Search makes..."
+            placeholder="Search makes and models..."
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             className="w-full bg-transparent text-sm text-[#1f1f1f] placeholder:text-[#7a7469] focus:outline-none"
@@ -67,36 +154,62 @@ const SearchCard = ({ onApply, onClear }) => {
 
       <div className="min-h-0 flex-1 px-2 pb-2">
         <ul className="h-full overflow-y-auto pr-1">
-          {filteredMakes.map((option) => {
-            const inventoryKey = option.inventoryKeyByMake ?? option.name;
-            const models = vehicleInventory[inventoryKey] ?? [];
-            const isExpanded = expandedMake === inventoryKey;
-            const checkedModels = selectedModels[inventoryKey] ?? [];
+          {visibleGroups.length === 0 && (
+            <li className="px-2 py-4 text-sm text-[#6b6a68]">
+              {loading
+                ? "Loading vehicles..."
+                : loadError
+                  ? "Unable to load vehicles."
+                  : groups.length === 0
+                    ? "No vehicles in stock yet."
+                    : "No makes or models match your search."}
+            </li>
+          )}
+
+          {visibleGroups.map((group) => {
+            const isExpanded = expandedMake === group.key;
+            const checkedModels = selectedModels[group.key] ?? [];
+            const allChecked =
+              group.models.length > 0 &&
+              group.models.every((model) => checkedModels.includes(model.key));
 
             return (
               <li
-                key={option.name}
+                key={group.key}
                 className="border-b border-black/50 px-2 last:border-b-0"
               >
                 <div>
                   <button
                     type="button"
-                    onClick={() => toggleMake(inventoryKey)}
+                    onClick={() => toggleMake(group.key)}
+                    aria-expanded={isExpanded}
                     className="flex min-h-12 w-full items-center gap-3 py-2 text-left"
                   >
-                    <img
-                      src={option.image}
-                      alt=""
-                      className="h-9 w-9 shrink-0 rounded-full bg-white object-contain p-1 shadow-[0_0_0_1px_rgba(0,0,0,0.08)]"
-                    />
+                    {group.image ? (
+                      <img
+                        src={group.image}
+                        alt=""
+                        className="h-9 w-9 shrink-0 rounded-full bg-white object-contain p-1 shadow-[0_0_0_1px_rgba(0,0,0,0.08)]"
+                      />
+                    ) : (
+                      <span
+                        aria-hidden="true"
+                        className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-slate-100 text-xs font-bold text-slate-600"
+                      >
+                        {group.name.slice(0, 2).toUpperCase()}
+                      </span>
+                    )}
 
                     <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
                       <div className="min-w-0">
                         <span className="block truncate text-[15px] font-semibold leading-[1.2] text-[#1d1d1d]">
-                          {option.name}
+                          {group.name}
                         </span>
                         <span className="mt-1 block text-[12px] leading-[1.2] text-[#6b6a68]">
-                          {option.count}
+                          {group.count}{" "}
+                          {group.count === 1 ? "vehicle" : "vehicles"}
+                          {checkedModels.length > 0 &&
+                            ` · ${checkedModels.length} selected`}
                         </span>
                       </div>
 
@@ -121,29 +234,55 @@ const SearchCard = ({ onApply, onClear }) => {
 
                   {isExpanded && (
                     <ul className="max-h-64 space-y-1 overflow-y-auto border-l border-[#d6cfbf] pb-2 pl-3 pr-1">
-                      {models
+                      {group.models.length === 0 && (
+                        <li className="px-2 py-2 text-sm text-[#6b6a68]">
+                          No vehicles in stock.
+                        </li>
+                      )}
+
+                      {group.models.length > 1 && (
+                        <li>
+                          <label
+                            htmlFor={`${group.key}-all`}
+                            className="flex min-h-10 cursor-pointer items-center gap-2 rounded px-2 py-2 text-sm font-semibold hover:bg-black/5"
+                          >
+                            <input
+                              id={`${group.key}-all`}
+                              type="checkbox"
+                              checked={allChecked}
+                              onChange={() => toggleAllModels(group)}
+                              className="h-4 w-4 accent-black"
+                            />
+                            <span className="min-w-0 flex-1 truncate text-[#1d1d1d]">
+                              All {group.name}
+                            </span>
+                          </label>
+                        </li>
+                      )}
+
+                      {group.models
                         .filter(
                           (model) =>
                             !query ||
-                            option.name.toLowerCase().includes(query) ||
-                            model.name.toLowerCase().includes(query),
+                            group.name.toLowerCase().includes(query) ||
+                            model.name.toLowerCase().includes(query)
                         )
                         .map((model) => {
-                          const checkboxId = `${inventoryKey}-${model.name}`;
-                          const isChecked = checkedModels.includes(model.name);
+                          const checkboxId = `${group.key}-${model.key}`;
+                          const isChecked = checkedModels.includes(model.key);
 
                           return (
-                            <li key={model.name}>
+                            <li key={model.key}>
                               <label
                                 htmlFor={checkboxId}
-                                className="flex min-h-10 cursor-pointer items-center gap-2 rounded px-2 py-2 text-sm hover:bg-white/40"
+                                className="flex min-h-10 cursor-pointer items-center gap-2 rounded px-2 py-2 text-sm hover:bg-black/5"
                               >
                                 <input
                                   id={checkboxId}
                                   type="checkbox"
                                   checked={isChecked}
                                   onChange={() =>
-                                    toggleModel(inventoryKey, model.name)
+                                    toggleModel(group.key, model.key)
                                   }
                                   className="h-4 w-4 accent-black"
                                 />
@@ -151,7 +290,7 @@ const SearchCard = ({ onApply, onClear }) => {
                                   {model.name}
                                 </span>
                                 <span className="shrink-0 text-[11px] text-[#6b6a68]">
-                                  {model.stock} in stock
+                                  {model.count} in stock
                                 </span>
                               </label>
                             </li>
@@ -165,11 +304,12 @@ const SearchCard = ({ onApply, onClear }) => {
           })}
         </ul>
       </div>
-      <div className="flex shrink-0 gap-3 border-black/50 bg-white px-4 py-3">
+
+      <div className="flex shrink-0 gap-3 border-t border-black/10 bg-white px-4 py-3">
         <button
           type="button"
           onClick={applyFilters}
-          className="min-h-11 flex-1 rounded-md bg-[#2d2d2d] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#2d2d2d]-300"
+          className="min-h-11 flex-1 rounded-md bg-[#2d2d2d] px-4 py-2 text-sm font-semibold text-white transition hover:bg-black"
         >
           Apply
         </button>

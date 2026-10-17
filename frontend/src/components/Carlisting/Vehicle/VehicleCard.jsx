@@ -23,7 +23,7 @@ const VehicleCard = ({ car }) => {
         {imageUrl ? (
           <img
             src={imageUrl}
-            alt={`${car.year} ${car.make} ${car.model_name}`}
+            alt={` ${car.make} ${car.model_name} ${car.year}`}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
@@ -34,7 +34,7 @@ const VehicleCard = ({ car }) => {
 
       <div className="vehicle-card-content">
         <h2 className="vehicle-name">
-          {car.year} {car.make} {car.model_name}
+         {car.make} {car.model_name} {car.year}
         </h2>
         <p className="vehicle-stock">
           Stock no. {car.stock_number || "Not assigned"}

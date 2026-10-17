@@ -307,7 +307,7 @@ const CarDetail = () => {
     );
   }
 
-  const title = `${car.year} ${car.make} ${car.model_name}`;
+  const title = ` ${car.make} ${car.model_name} ${car.year}`;
 
   // Chosen per vehicle in the Django admin
   const salesReps = car.sales_representatives || [];
