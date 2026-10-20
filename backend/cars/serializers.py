@@ -1,4 +1,3 @@
-# cars/serializers.py
 from rest_framework import serializers
 
 from .models import Car, CarImage, SalesRepresentative
@@ -39,7 +38,7 @@ class CarSerializer(serializers.ModelSerializer):
     body_type_display = serializers.CharField(
         source='get_body_type_display', read_only=True
     )
-    images = CarImageSerializer(many=True, read_only=True)
+    images = CarImageSerializer(many=True, read_only=True) 
     sales_representatives = SalesRepresentativeSerializer(many=True, read_only=True)
     feature_list = serializers.SerializerMethodField()
     equipment_list = serializers.SerializerMethodField()

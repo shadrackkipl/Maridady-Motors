@@ -1,4 +1,4 @@
-# backend/cars/urls.py
+
 from django.urls import path
 from .views import sales_rep_list
 from . import views
