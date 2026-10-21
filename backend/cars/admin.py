@@ -1,3 +1,4 @@
+# cars/admin.py
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
@@ -7,7 +8,8 @@ from django.utils.html import format_html
 from unfold.admin import ModelAdmin, TabularInline
 from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationForm
 
-from .models import Car, CarImage, SalesRepresentative
+from .models import Car, CarImage, SalesRepresentative, StaffMember
+from .staff import STAFF_GROUP_NAME, ensure_staff_group
 
 User = get_user_model()
 
@@ -110,3 +112,52 @@ class SalesRepresentativeAdmin(ModelAdmin):
                 obj.photo.url,
             )
         return "—"
+
+
+@admin.register(StaffMember)
+class StaffMemberAdmin(BaseUserAdmin, ModelAdmin):
+    """
+    Add staff here. They can sign in to the staff panel and manage cars
+    only. They cannot open this Django admin (Staff status stays off).
+    """
+
+    form = UserChangeForm
+    add_form = UserCreationForm
+    change_password_form = AdminPasswordChangeForm
+
+    list_display = ('username', 'first_name', 'last_name', 'email', 'is_active')
+    list_filter = ('is_active',)
+    search_fields = ('username', 'first_name', 'last_name', 'email')
+
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        ('Personal info', {'fields': ('first_name', 'last_name', 'email')}),
+        ('Access', {
+            'fields': ('is_active',),
+            'description': (
+                'Staff can manage cars only. Untick Active to block this '
+                'person from signing in.'
+            ),
+        }),
+    )
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('username', 'password1', 'password2'),
+        }),
+    )
+
+    def get_queryset(self, request):
+        return (
+            super().get_queryset(request)
+            .filter(groups__name=STAFF_GROUP_NAME, is_superuser=False)
+        )
+
+    def save_model(self, request, obj, form, change):
+        obj.is_staff = False  # no access to the Django admin
+        obj.is_superuser = False
+        super().save_model(request, obj, form, change)
+
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        form.instance.groups.add(ensure_staff_group())

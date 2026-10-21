@@ -74,3 +74,22 @@ class CarApiTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual([car['id'] for car in response.data], [available_car.id])
         self.assertNotIn(hidden_car.id, [car['id'] for car in response.data])
+
+    def test_staff_me_returns_authenticated_user_profile(self):
+        user = get_user_model().objects.create_user(
+            username='staff-member',
+            first_name='Staff',
+            last_name='Member',
+        )
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get('/api/staff/me/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['username'], 'staff-member')
+        self.assertEqual(response.data['first_name'], 'Staff')
+        self.assertEqual(response.data['last_name'], 'Member')
+        self.assertEqual(
+            response.data['can'],
+            {'view': False, 'add': False, 'change': False, 'delete': False},
+        )

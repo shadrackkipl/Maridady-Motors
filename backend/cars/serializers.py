@@ -1,3 +1,4 @@
+# cars/serializers.py
 from rest_framework import serializers
 
 from .models import Car, CarImage, SalesRepresentative
@@ -38,7 +39,7 @@ class CarSerializer(serializers.ModelSerializer):
     body_type_display = serializers.CharField(
         source='get_body_type_display', read_only=True
     )
-    images = CarImageSerializer(many=True, read_only=True) 
+    images = CarImageSerializer(many=True, read_only=True)
     sales_representatives = SalesRepresentativeSerializer(many=True, read_only=True)
     feature_list = serializers.SerializerMethodField()
     equipment_list = serializers.SerializerMethodField()
@@ -69,3 +70,35 @@ class CarSerializer(serializers.ModelSerializer):
 
     def get_equipment_list(self, obj):
         return [line.strip() for line in obj.equipment.splitlines() if line.strip()]
+
+
+class StaffCarSerializer(serializers.ModelSerializer):
+    """Full read/write car data for the staff panel."""
+
+    body_type_display = serializers.CharField(
+        source='get_body_type_display', read_only=True
+    )
+    images = CarImageSerializer(many=True, read_only=True)
+    sales_representative_ids = serializers.PrimaryKeyRelatedField(
+        many=True,
+        required=False,
+        queryset=SalesRepresentative.objects.all(),
+        source='sales_representatives',
+    )
+
+    class Meta:
+        model = Car
+        fields = [
+            'id', 'make', 'model_name', 'body_type', 'body_type_display',
+            'year', 'stock_number', 'price', 'mileage', 'engine_capacity',
+            'drivetrain', 'condition', 'location', 'variant', 'trim',
+            'model_code', 'doors', 'seats', 'exterior_color',
+            'interior_color', 'transmission', 'fuel_type', 'description',
+            'features', 'equipment', 'image', 'images',
+            'sales_representative_ids', 'is_available', 'created_at',
+        ]
+        read_only_fields = ['id', 'created_at']
+        extra_kwargs = {
+            'engine_capacity': {'min_value': 1},
+            'drivetrain': {'required': True, 'allow_blank': False},
+        }

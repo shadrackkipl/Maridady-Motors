@@ -1,4 +1,5 @@
 # cars/models.py
+from django.contrib.auth import get_user_model
 from django.db import models
 
 
@@ -149,3 +150,15 @@ class SalesRepresentative(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class StaffMember(get_user_model()):
+    """
+    Proxy of the user model, used only to give the admin a simple
+    "Staff members" screen. It creates no new database table.
+    """
+
+    class Meta:
+        proxy = True
+        verbose_name = "Staff member"
+        verbose_name_plural = "Staff members"
