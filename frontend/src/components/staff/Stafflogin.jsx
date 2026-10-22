@@ -10,6 +10,7 @@ import {
 } from "react-icons/fi";
 import { staffLogin } from "./Staffapi";
 import SlideImage1 from "../../assets/slide/slide4.png";
+import MaridadyLogo from "../../assets/MaridadyLogo.png";
 
 const inputClass =
   "w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-amber-600 focus:ring-4 focus:ring-amber-600/10";
@@ -52,9 +53,8 @@ const StaffLogin = () => {
             className="mb-14 inline-flex items-center gap-3"
             href="/"
           >
-            <span className="grid size-11 place-items-center rounded-xl bg-slate-950 text-sm font-bold tracking-wider text-amber-400">
-              MM
-            </span>
+            <img src={MaridadyLogo} alt="" className="h-10 w-auto" />
+            
             <span className="leading-tight">
               <span className="block text-sm font-bold tracking-[0.14em] text-slate-950">
                 MARIDADY MOTORS
@@ -66,7 +66,7 @@ const StaffLogin = () => {
           </a>
 
           <div className="mb-8">
-            <p className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-amber-700">
+            <p className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-pink-700">
               Secure staff access
             </p>
             <h1 className="text-3xl font-bold tracking-tight text-black-950 sm:text-4xl">
@@ -149,7 +149,7 @@ const StaffLogin = () => {
             )}
 
             <button
-              className="group flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-950/15 disabled:cursor-not-allowed disabled:opacity-60"
+              className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[#2d2d2d] px-5 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-950/15 disabled:cursor-not-allowed disabled:opacity-60"
               disabled={submitting}
               type="submit"
             >
@@ -177,7 +177,7 @@ const StaffLogin = () => {
       >
         <div className="absolute inset-0 bg-gradient-to-br from-slate-950/80 via-slate-950/45 to-slate-950/15" />
         <div className="absolute inset-x-0 bottom-0 p-12 xl:p-16">
-          <div className="mb-5 h-1 w-12 rounded-full bg-amber-400" />
+          <div className="mb-5 h-1 w-12 rounded-full bg-pink-500" />
           <p className="max-w-lg text-3xl font-semibold leading-tight text-white xl:text-4xl">
             Everything you need to keep your showroom moving.
           </p>
