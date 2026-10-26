@@ -44,7 +44,7 @@ export default function App() {
             Empowering Your Drive with Maridady Motors
           </h1>
           <p className="text-neutral-600 text-base md:text-lg leading-relaxed max-w-2xl mx-auto">
-            For over 14 years, we've helped thousands of drivers across Kenya buy, import, and finance quality vehicles with complete peace of mind.
+            For over 15 years, we've helped thousands of drivers across Kenya buy, import, and finance quality vehicles with complete peace of mind.
           </p>
         </div>
 

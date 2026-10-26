@@ -1,141 +1,105 @@
-import React from "react";
-import { SuvVehicles } from "../../constants/suv";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import axios from "axios";
+import HomeVehicleCard, { HomeVehicleCardSkeleton } from "./HomeVehicleCard";
+import { API_URL, pickDaily, todayLabel } from "./homeVehicleUtils";
 import SuvBanner from "../../assets/WEBSITE_BANNER.png";
 
-const numberFormat = new Intl.NumberFormat("en-KE");
-
-const formatKES = (n) =>
-  Number.isFinite(n) ? `KES ${numberFormat.format(n)}` : "Price on request";
-
-const formatKm = (n) =>
-  Number.isFinite(n) ? `${numberFormat.format(n)} km` : null;
-
-const formatCc = (n) =>
-  Number.isFinite(n) ? `${numberFormat.format(n)} cc` : null;
-
-const Spec = ({ label, value }) => (
-  <div className="min-w-0">
-    <dt className="text-xs text-slate-500">{label}</dt>
-    <dd
-      title={value || undefined}
-      className="truncate text-sm font-medium text-slate-900"
-    >
-      {value || "N/A"}
-    </dd>
-  </div>
-);
-
-const VehicleCard = ({ vehicle, priority = false }) => {
-  const { image, brand, model, year, price, stock, mileage, engineCc, drivetrain, code } =
-    vehicle;
-
-  const title = [year, brand, model].filter(Boolean).join(" ") || "Vehicle";
-
-  return (
-    <article className="group flex min-w-0 flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 transition duration-300 hover:-translate-y-1 hover:shadow-xl">
-      <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
-        {image ? (
-          <img
-            src={image}
-            alt={title}
-            width={800}
-            height={600}
-            loading={priority ? "eager" : "lazy"}
-            decoding="async"
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-sm text-slate-400">
-            No photo
-          </div>
-        )}
-        {stock && (
-          <span className="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-xs font-medium text-slate-800 shadow-sm backdrop-blur-sm">
-            {stock}
-          </span>
-        )}
-      </div>
-
-      <div className="flex flex-1 flex-col p-5 sm:p-6">
-        <h3 className="text-lg font-semibold tracking-tight text-slate-900 sm:text-xl">
-          {title}
-        </h3>
-        {code && (
-          <p className="mt-0.5 text-xs text-slate-500">Stock no. {code}</p>
-        )}
-
-        <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-4 border-y border-slate-100 py-4">
-          <Spec label="Mileage" value={formatKm(mileage)} />
-          <Spec label="Engine" value={formatCc(engineCc)} />
-          <Spec label="Drivetrain" value={drivetrain} />
-          <Spec label="Make" value={brand} />
-        </dl>
-
-        <div className="mt-auto flex flex-wrap items-end justify-between gap-3 pt-5">
-          <div>
-            <p className="text-xs text-slate-500">Price</p>
-            <p className="text-lg font-bold text-slate-900 sm:text-xl">
-              {formatKES(price)}
-            </p>
-          </div>
-          <a
-            href={`/vehicles/${code}`}
-            aria-label={`View details for ${title}`}
-            className="shrink-0 rounded-lg bg-[#2d2d2d] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-black focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-800 focus-visible:ring-offset-2"
-          >
-            View details
-          </a>
-        </div>
-      </div>
-    </article>
-  );
-};
+// Exactly this many SUVs are shown each day
+const SUV_COUNT = 8;
 
 const SuvVehiclesList = () => {
-  if (!SuvVehicles?.length) return null;
+  const [cars, setCars] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    axios
+      .get(`${API_URL}/api/cars/`, {
+        params: { body_type: "suv", featured: 1, limit: SUV_COUNT },
+        signal: controller.signal,
+      })
+      .then((response) => {
+        const list = Array.isArray(response.data) ? response.data : [];
+        setCars(pickDaily(list, SUV_COUNT));
+      })
+      .catch((requestError) => {
+        if (axios.isCancel(requestError)) return;
+        console.error("Error loading SUVs:", requestError);
+        setError(true);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+
+    return () => controller.abort();
+  }, []);
+
+  // No SUVs in stock: hide the whole section, banner included
+  if (!loading && !error && cars.length === 0) return null;
 
   return (
-    <section aria-labelledby="suv-vehicles-heading" className="relative z-10 w-full min-w-0">
+    <section
+      aria-labelledby="suv-vehicles-heading"
+      className="relative z-10 w-full min-w-0"
+    >
       <div className="mb-6 overflow-hidden rounded-2xl shadow-lg">
         <img
-          src={SuvBanner}
           alt="Explore our SUV collection"
-          className=" w-800  "
+          className="h-auto w-full object-cover"
           decoding="async"
+          src={SuvBanner}
         />
       </div>
 
       <div className="w-full min-w-0">
         <div className="rounded-2xl bg-slate-50 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-8">
-          <header>
-            <h2
-              id="suv-vehicles-heading"
-              className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl"
-            >
-              SUVs
-            </h2>
-            <p className="mt-1 text-sm text-slate-600">
-              Inspected, ready for handover, and priced in Kenya shillings.
+          <header className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+            <div>
+              <h2
+                className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl"
+                id="suv-vehicles-heading"
+              >
+                SUVs
+              </h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Today&apos;s selection of SUVs from our current stock, refreshed every day.
+              </p>
+            </div>
+            <p className="inline-flex w-fit items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200">
+              <span className="size-1.5 rounded-full bg-pink-500" />
+              Today&apos;s picks · {todayLabel()}
             </p>
           </header>
 
-          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-            {SuvVehicles.map((vehicle, index) => (
-              <VehicleCard
-                key={vehicle.id ?? vehicle.code}
-                vehicle={vehicle}
-                priority={index < 3}
-              />
-            ))}
-          </div>
+          {error ? (
+            <p className="mt-8 text-center text-sm text-slate-500" role="alert">
+              SUVs are unavailable right now. Please try again later.
+            </p>
+          ) : (
+            <div
+              aria-busy={loading}
+              className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4"
+            >
+              {loading
+                ? Array.from({ length: SUV_COUNT }, (_, index) => (
+                    <HomeVehicleCardSkeleton key={index} />
+                  ))
+                : cars.map((car, index) => (
+                    <HomeVehicleCard car={car} key={car.id} priority={index < 3} />
+                  ))}
+            </div>
+          )}
 
           <div className="mt-8 flex justify-center">
-            <a
-              href="/vehicles"
+            <Link
               className="rounded-lg px-5 py-2.5 text-sm font-semibold text-slate-900 ring-1 ring-slate-300 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-800 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50"
+              to="/car-listing"
             >
               Browse all vehicles
-            </a>
+            </Link>
           </div>
         </div>
       </div>

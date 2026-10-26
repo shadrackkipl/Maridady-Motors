@@ -34,12 +34,12 @@ const WhoAreWe = ({ image = showroom }) => {
             id="who-we-are-title"
             className="mt-5 text-3xl font-bold leading-tight text-neutral-800 sm:text-4xl lg:text-[2.6rem]"
           >
-            14+ Years Helping Drivers Across Kenya
+            15+ Years Helping Drivers Across Kenya
           </h2>
 
           <p className="mt-5 leading-relaxed text-neutral-600">
             We're a Nairobi motor company built on one idea: buying a car should
-            feel safe, clear and within reach. For over 12 years, we've helped
+            feel safe, clear and within reach. For over 15 years, we've helped
             thousands of drivers across Kenya buy, import and finance quality
             vehicles.
           </p>

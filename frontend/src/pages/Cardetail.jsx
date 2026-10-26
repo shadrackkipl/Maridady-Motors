@@ -384,7 +384,7 @@ const CarDetail = () => {
     "absolute top-1/2 flex h-9 w-9 sm:h-10 sm:w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-2xl leading-none shadow hover:bg-white";
 
   return (
-    <main className="mx-auto max-w-7xl px-3 py-4 sm:px-4 bg-[#f5f5f0]">
+    <main className="mx-auto px-3 py-4 sm:px-4 bg-[#f5f5f0]">
       <button
         className="mb-3 text-sm text-blue-600 hover:underline"
         onClick={() => navigate(-1)}

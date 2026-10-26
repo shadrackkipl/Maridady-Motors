@@ -1,5 +1,9 @@
-from django.shortcuts import get_object_or_404
+# cars/views.py
+import hashlib
+from datetime import datetime, timedelta, timezone
+
 from django.db.models import Prefetch
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import (
     api_view,
@@ -18,6 +22,36 @@ ACTIVE_REPS = Prefetch(
     'sales_representatives',
     queryset=SalesRepresentative.objects.filter(is_active=True),
 )
+
+
+# East Africa Time (UTC+3, no daylight saving): the "day" changes at midnight in Nairobi
+NAIROBI_TZ = timezone(timedelta(hours=3))
+
+
+# How many vehicles are featured each day (fewer if stock is lower).
+# Pages can ask for another number with ?limit=, up to the maximum.
+FEATURED_DAILY_COUNT = 6
+FEATURED_MAX_COUNT = 12
+
+
+def daily_featured(cars, limit_param=None):
+    """
+    Picks cars that stay the same all day for every visitor and change at
+    midnight. Each car gets a score from the date and its id, and the lowest
+    scores win, so adding a car mid-day rarely reshuffles the list.
+    """
+    try:
+        count = max(1, min(int(limit_param), FEATURED_MAX_COUNT))
+    except (TypeError, ValueError):
+        count = FEATURED_DAILY_COUNT
+
+    today = datetime.now(NAIROBI_TZ).date().isoformat()
+    by_id = {car.id: car for car in cars}
+    ranked = sorted(
+        by_id,
+        key=lambda car_id: hashlib.sha256(f'{today}:{car_id}'.encode()).hexdigest(),
+    )
+    return [by_id[car_id] for car_id in ranked[:count]]
 
 
 @api_view(['GET'])
@@ -44,6 +78,10 @@ def car_list(request):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         cars = cars.filter(body_type=body_type)
+
+    # Optional: /api/cars/?featured=1&limit=8 gives today's rotating picks
+    if request.query_params.get('featured'):
+        cars = daily_featured(cars, request.query_params.get('limit'))
 
     serializer = CarSerializer(cars, many=True, context={'request': request})
     return Response(serializer.data)
