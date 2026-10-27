@@ -1,7 +1,13 @@
 # cars/serializers.py
+from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
 from .models import Car, CarImage, SalesRepresentative
+from .staff import ensure_staff_group
+
+User = get_user_model()
 
 
 def normalize_phone(value):
@@ -102,3 +108,63 @@ class StaffCarSerializer(serializers.ModelSerializer):
             'engine_capacity': {'min_value': 1},
             'drivetrain': {'required': True, 'allow_blank': False},
         }
+
+
+class StaffUserSerializer(serializers.ModelSerializer):
+    """Staff accounts, managed by the administrator in the admin panel."""
+
+    password = serializers.CharField(
+        write_only=True,
+        required=False,
+        style={'input_type': 'password'},
+    )
+
+    class Meta:
+        model = User
+        fields = [
+            'id', 'username', 'first_name', 'last_name', 'email',
+            'is_active', 'date_joined', 'last_login', 'password',
+        ]
+        read_only_fields = ['id', 'date_joined', 'last_login']
+
+    def validate_password(self, value):
+        try:
+            validate_password(value)
+        except DjangoValidationError as error:
+            raise serializers.ValidationError(list(error.messages))
+        return value
+
+    def validate(self, attrs):
+        if self.instance is None and not attrs.get('password'):
+            raise serializers.ValidationError({'password': 'A password is required.'})
+        return attrs
+
+    def create(self, validated_data):
+        password = validated_data.pop('password')
+        user = User(**validated_data)
+        user.is_staff = False       # no access to the Django admin
+        user.is_superuser = False
+        user.set_password(password)
+        user.save()
+        user.groups.add(ensure_staff_group())
+        return user
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        for field, value in validated_data.items():
+            setattr(instance, field, value)
+        if password:
+            instance.set_password(password)
+        instance.save()
+        return instance
+
+
+class AdminSalesRepSerializer(serializers.ModelSerializer):
+    cars_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = SalesRepresentative
+        fields = [
+            'id', 'name', 'photo', 'phone', 'whatsapp_number',
+            'is_active', 'order', 'cars_count',
+        ]

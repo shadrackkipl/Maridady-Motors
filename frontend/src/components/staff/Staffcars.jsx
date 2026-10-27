@@ -5,6 +5,7 @@ import {
   FiCheck,
   FiCheckCircle,
   FiDollarSign,
+  FiGrid,
   FiEdit2,
   FiEyeOff,
   FiImage,
@@ -21,7 +22,7 @@ import { useStaff } from "./StaffRoute";
 
 const formatNumber = (value) => Number(value || 0).toLocaleString("en-KE");
 const formatPrice = (value) => `KES ${formatNumber(value)}`;
-const carName = (car) => `${car.make} ${car.model_name} ${car.year}`;
+const carName = (car) => `${car.year} ${car.make} ${car.model_name}`;
 
 const getInitials = (me) => {
   const source =
@@ -308,6 +309,15 @@ const StaffCars = () => {
                 </p>
               </div>
             </div>
+            {me.is_superuser && (
+              <Link
+                className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-sm font-medium text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
+                to="/admin-panel"
+              >
+                <FiGrid aria-hidden="true" className="size-4" />
+                <span className="hidden sm:inline">Admin panel</span>
+              </Link>
+            )}
             <button
               aria-label="Sign out"
               className="inline-flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2 text-sm font-medium text-white/90 transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/30"

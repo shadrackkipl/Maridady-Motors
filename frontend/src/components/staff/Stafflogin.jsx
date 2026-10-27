@@ -136,7 +136,7 @@ const StaffLogin = () => {
     setSubmitting(true);
 
     try {
-      await staffLogin(username.trim(), password);
+      const me = await staffLogin(username.trim(), password);
 
       try {
         if (remember) localStorage.setItem(REMEMBER_KEY, username.trim());
@@ -145,7 +145,9 @@ const StaffLogin = () => {
         /* storage unavailable: nothing to remember */
       }
 
-      navigate("/staff/cars", { replace: true });
+      navigate(me.is_superuser ? "/admin-panel" : "/staff/cars", {
+        replace: true,
+      });
     } catch (loginError) {
       if (loginError.code === "no-access") {
         setError("This account does not have access to the staff panel.");

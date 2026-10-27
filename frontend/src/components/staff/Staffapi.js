@@ -19,65 +19,74 @@ export const clearTokens = () => {
   localStorage.removeItem(REFRESH_KEY);
 };
 
-export const staffApi = axios.create({ baseURL: `${API_URL}/api/staff` });
-
-staffApi.interceptors.request.use((config) => {
-  const token = getAccessToken();
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
-
 // When the access token expires, get a new one and retry once
 let refreshing = null;
 
-staffApi.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const original = error.config;
+const attachAuth = (instance) => {
+  instance.interceptors.request.use((config) => {
+    const token = getAccessToken();
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+    return config;
+  });
 
-    if (
-      error.response?.status === 401 &&
-      original &&
-      !original._retry &&
-      getRefreshToken()
-    ) {
-      original._retry = true;
+  instance.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+      const original = error.config;
 
-      try {
-        if (!refreshing) {
-          refreshing = axios
-            .post(REFRESH_URL, { refresh: getRefreshToken() })
-            .then((response) => response.data)
-            .finally(() => {
-              refreshing = null;
-            });
+      if (
+        error.response?.status === 401 &&
+        original &&
+        !original._retry &&
+        getRefreshToken()
+      ) {
+        original._retry = true;
+
+        try {
+          if (!refreshing) {
+            refreshing = axios
+              .post(REFRESH_URL, { refresh: getRefreshToken() })
+              .then((response) => response.data)
+              .finally(() => {
+                refreshing = null;
+              });
+          }
+          const data = await refreshing;
+
+          localStorage.setItem(ACCESS_KEY, data.access);
+          if (data.refresh) localStorage.setItem(REFRESH_KEY, data.refresh);
+
+          original.headers.Authorization = `Bearer ${data.access}`;
+          return instance(original);
+        } catch (refreshError) {
+          clearTokens();
+          window.location.assign("/staff/login");
+          return Promise.reject(refreshError);
         }
-        const data = await refreshing;
-
-        localStorage.setItem(ACCESS_KEY, data.access);
-        if (data.refresh) localStorage.setItem(REFRESH_KEY, data.refresh);
-
-        original.headers.Authorization = `Bearer ${data.access}`;
-        return staffApi(original);
-      } catch (refreshError) {
-        clearTokens();
-        window.location.assign("/staff/login");
-        return Promise.reject(refreshError);
       }
+
+      return Promise.reject(error);
     }
+  );
+};
 
-    return Promise.reject(error);
-  }
-);
+/** Car management endpoints, used by staff and the administrator. */
+export const staffApi = axios.create({ baseURL: `${API_URL}/api/staff` });
 
-/** Signs in and returns the staff profile. Throws if the person has no car access. */
+/** Administrator-only endpoints (staff accounts, sales team, dashboard). */
+export const adminApi = axios.create({ baseURL: `${API_URL}/api/admin-panel` });
+
+attachAuth(staffApi);
+attachAuth(adminApi);
+
+/** Signs in and returns the profile. Throws if the person has no panel access. */
 export const staffLogin = async (username, password) => {
   const { data } = await axios.post(TOKEN_URL, { username, password });
   localStorage.setItem(ACCESS_KEY, data.access);
   localStorage.setItem(REFRESH_KEY, data.refresh);
 
   const { data: me } = await staffApi.get("/me/");
-  if (!me.can.view) {
+  if (!me.can.view && !me.is_superuser) {
     clearTokens();
     const error = new Error("no-access");
     error.code = "no-access";
