@@ -1,22 +1,29 @@
-import { useState } from "react";
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import {
   FiBriefcase,
   FiExternalLink,
+  FiFileText,
   FiGrid,
+  FiInbox,
   FiLogOut,
   FiMenu,
+  FiSend,
   FiUsers,
   FiX,
 } from "react-icons/fi";
 import { MdDirectionsCar } from "react-icons/md";
+import { adminApi } from "../staff/Staffapi";
 import { useStaff } from "../staff/StaffRoute";
 
 const NAV = [
   { to: "/admin-panel", label: "Dashboard", icon: FiGrid, end: true },
   { to: "/staff/cars", label: "Vehicles", icon: MdDirectionsCar },
+  { to: "/admin-panel/inquiries", label: "Client requests", icon: FiInbox, badge: true },
+  { to: "/admin-panel/sales", label: "Sales & invoices", icon: FiFileText },
   { to: "/admin-panel/staff", label: "Staff members", icon: FiUsers },
   { to: "/admin-panel/sales-reps", label: "Sales team", icon: FiBriefcase },
+  { to: "/admin-panel/announcements", label: "Announcements", icon: FiSend },
 ];
 
 const getInitials = (me) =>
@@ -30,6 +37,16 @@ const getInitials = (me) =>
 const AdminLayout = () => {
   const { me, logout } = useStaff();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [newRequests, setNewRequests] = useState(0);
+  const { pathname } = useLocation();
+
+  // Number of unread client requests, refreshed when you move between pages
+  useEffect(() => {
+    adminApi
+      .get("/inquiries/summary/")
+      .then(({ data }) => setNewRequests(data.new))
+      .catch(() => {});
+  }, [pathname]);
 
   const displayName =
     [me.first_name, me.last_name].filter(Boolean).join(" ") || me.username;
@@ -49,7 +66,7 @@ const AdminLayout = () => {
       </div>
 
       <nav aria-label="Admin" className="flex-1 space-y-1 px-3 py-5">
-        {NAV.map(({ to, label, icon: Icon, end }) => (
+        {NAV.map(({ to, label, icon: Icon, end, badge }) => (
           <NavLink
             className={({ isActive }) =>
               `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
@@ -64,7 +81,15 @@ const AdminLayout = () => {
             to={to}
           >
             <Icon aria-hidden="true" className="size-[18px]" />
-            {label}
+            <span className="flex-1">{label}</span>
+            {badge && newRequests > 0 && (
+              <span
+                aria-label={`${newRequests} new`}
+                className="min-w-5 rounded-full bg-pink-500 px-1.5 py-0.5 text-center text-[11px] font-bold leading-none text-white"
+              >
+                {newRequests}
+              </span>
+            )}
           </NavLink>
         ))}
       </nav>

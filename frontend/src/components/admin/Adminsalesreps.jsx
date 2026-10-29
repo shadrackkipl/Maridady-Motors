@@ -27,6 +27,7 @@ const EMPTY_FORM = {
   name: "",
   phone: "",
   whatsapp_number: "",
+  email: "",
   order: "0",
   is_active: true,
 };
@@ -101,6 +102,7 @@ const AdminSalesReps = () => {
             name: rep.name,
             phone: rep.phone || "",
             whatsapp_number: rep.whatsapp_number || "",
+            email: rep.email || "",
             order: String(rep.order ?? 0),
             is_active: rep.is_active,
           }
@@ -162,6 +164,7 @@ const AdminSalesReps = () => {
     data.append("name", form.name.trim());
     data.append("phone", form.phone.trim());
     data.append("whatsapp_number", form.whatsapp_number.trim());
+    data.append("email", form.email.trim());
     data.append("order", form.order === "" ? "0" : form.order);
     data.append("is_active", String(form.is_active));
     if (photoFile) data.append("photo", photoFile);
@@ -289,6 +292,9 @@ const AdminSalesReps = () => {
                   {rep.whatsapp_number && rep.whatsapp_number !== rep.phone && (
                     <p className="text-xs text-slate-400">WhatsApp: {rep.whatsapp_number}</p>
                   )}
+                  {rep.email && (
+                    <p className="truncate text-xs text-slate-400">{rep.email}</p>
+                  )}
                 </div>
               </div>
 
@@ -397,6 +403,15 @@ const AdminSalesReps = () => {
                 />
               </Field>
             </div>
+
+            <Field error={fieldError("email")} hint="Used for announcements you send from the admin panel. Customers never see it." label="Email address">
+              <input
+                className={inputClass}
+                onChange={update("email")}
+                type="email"
+                value={form.email}
+              />
+            </Field>
 
             <Field error={fieldError("order")} hint="Lower numbers are shown first" label="Display order">
               <input

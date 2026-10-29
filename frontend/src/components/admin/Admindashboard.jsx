@@ -6,8 +6,11 @@ import {
   FiCheckCircle,
   FiDollarSign,
   FiEyeOff,
+  FiFileText,
+  FiInbox,
   FiPackage,
   FiPlus,
+  FiTrendingUp,
   FiUsers,
 } from "react-icons/fi";
 import { adminApi } from "../staff/Staffapi";
@@ -82,6 +85,9 @@ const AdminDashboard = () => {
             <StatCard detail="Value of available vehicles" icon={FiDollarSign} label="Listed value" tone="bg-sky-50 text-sky-700" value={`KES ${formatNumber(stats.cars.listed_value)}`} />
             <StatCard detail={`${formatNumber(stats.staff.active)} active`} icon={FiUsers} label="Staff members" tone="bg-violet-50 text-violet-700" value={formatNumber(stats.staff.total)} />
             <StatCard detail={`${formatNumber(stats.sales_reps.active)} active`} icon={FiBriefcase} label="Sales team" tone="bg-rose-50 text-rose-700" value={formatNumber(stats.sales_reps.total)} />
+            <StatCard detail={`${formatNumber(stats.inquiries.total)} received in total`} icon={FiInbox} label="New client requests" tone="bg-pink-50 text-pink-700" value={formatNumber(stats.inquiries.new)} />
+            <StatCard detail={`${formatNumber(stats.sales.total)} ${stats.sales.total === 1 ? "sale" : "sales"} recorded`} icon={FiTrendingUp} label="Total sales" tone="bg-emerald-50 text-emerald-700" value={`KES ${formatNumber(stats.sales.revenue)}`} />
+            <StatCard detail="Still to be paid on invoices" icon={FiFileText} label="Balance owed" tone="bg-amber-50 text-amber-700" value={`KES ${formatNumber(stats.sales.outstanding)}`} />
           </section>
 
           <div className="grid gap-6 lg:grid-cols-2">
@@ -144,6 +150,9 @@ const AdminDashboard = () => {
             <h2 className="text-base font-semibold text-slate-900">Quick actions</h2>
             <div className="mt-4 flex flex-wrap gap-3">
               <Link className={secondaryButtonClass} to="/staff/cars/new">Add a vehicle</Link>
+              <Link className={secondaryButtonClass} to="/admin-panel/inquiries">View client requests</Link>
+              <Link className={secondaryButtonClass} to="/admin-panel/sales">Record a sale</Link>
+              <Link className={secondaryButtonClass} to="/admin-panel/announcements">Send an announcement</Link>
               <Link className={secondaryButtonClass} to="/admin-panel/staff">Manage staff</Link>
               <Link className={secondaryButtonClass} to="/admin-panel/sales-reps">Manage sales team</Link>
             </div>

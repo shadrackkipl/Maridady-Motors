@@ -4,7 +4,14 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
-from .models import Car, CarImage, SalesRepresentative
+from .models import (
+    Announcement,
+    Car,
+    CarImage,
+    Inquiry,
+    Sale,
+    SalesRepresentative,
+)
 from .staff import ensure_staff_group
 
 User = get_user_model()
@@ -165,6 +172,227 @@ class AdminSalesRepSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesRepresentative
         fields = [
-            'id', 'name', 'photo', 'phone', 'whatsapp_number',
+            'id', 'name', 'photo', 'phone', 'whatsapp_number', 'email',
             'is_active', 'order', 'cars_count',
         ]
+
+
+# ---------------------------------------------------------------------------
+# Client requests (inquiries)
+# ---------------------------------------------------------------------------
+
+class InquiryCreateSerializer(serializers.ModelSerializer):
+    """What a customer sends from the website."""
+
+    car = serializers.PrimaryKeyRelatedField(
+        queryset=Car.objects.filter(is_available=True),
+        required=False,
+        allow_null=True,
+    )
+
+    class Meta:
+        model = Inquiry
+        fields = ['car', 'name', 'phone', 'email', 'message']
+        extra_kwargs = {
+            'name': {'max_length': 100},
+            'message': {'max_length': 2000},
+        }
+
+    def validate_name(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError('Please enter your name.')
+        return value
+
+    def validate_phone(self, value):
+        digits = ''.join(ch for ch in value if ch.isdigit())
+        if not 9 <= len(digits) <= 15:
+            raise serializers.ValidationError('Please enter a valid phone number.')
+        return value.strip()
+
+    def validate_message(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError('Please write a short message.')
+        return value
+
+    def create(self, validated_data):
+        car = validated_data.get('car')
+        if car:
+            validated_data['vehicle_label'] = (
+                f'{car.year} {car.make} {car.model_name} (Stock no. {car.stock_number})'
+            )
+        return super().create(validated_data)
+
+
+class AdminInquirySerializer(serializers.ModelSerializer):
+    """The administrator can read everything and change only status and notes."""
+
+    class Meta:
+        model = Inquiry
+        fields = [
+            'id', 'car', 'vehicle_label', 'name', 'phone', 'email',
+            'message', 'status', 'admin_notes', 'created_at',
+        ]
+        read_only_fields = [
+            'id', 'car', 'vehicle_label', 'name', 'phone', 'email',
+            'message', 'created_at',
+        ]
+
+
+# ---------------------------------------------------------------------------
+# Sales and invoices
+# ---------------------------------------------------------------------------
+
+def vehicle_snapshot(car):
+    """Text copied onto the invoice at the time of sale."""
+    details = [
+        ('Year', car.year),
+        ('Make', car.make),
+        ('Model', car.model_name),
+        ('Variant', car.variant),
+        ('Body type', car.get_body_type_display()),
+        ('Mileage', f'{car.mileage:,} km' if car.mileage is not None else ''),
+        ('Engine', f'{car.engine_capacity:,} cc' if car.engine_capacity else ''),
+        ('Transmission', car.transmission),
+        ('Fuel type', car.fuel_type),
+        ('Drivetrain', car.drivetrain),
+        ('Colour', car.exterior_color),
+        ('Condition', car.condition),
+    ]
+    return {
+        'vehicle_description': f'{car.year} {car.make} {car.model_name}',
+        'stock_number': car.stock_number,
+        'vehicle_details': '\n'.join(
+            f'{label}: {value}' for label, value in details if value not in ('', None)
+        ),
+    }
+
+
+class SaleSerializer(serializers.ModelSerializer):
+    car = serializers.PrimaryKeyRelatedField(
+        queryset=Car.objects.all(), required=False, allow_null=True
+    )
+    sale_price = serializers.DecimalField(
+        max_digits=12, decimal_places=2, required=False, min_value=0
+    )
+    amount_paid = serializers.DecimalField(
+        max_digits=12, decimal_places=2, required=False, min_value=0
+    )
+    balance = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
+    payment_status = serializers.CharField(read_only=True)
+    created_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Sale
+        fields = [
+            'id', 'invoice_number', 'car', 'vehicle_description', 'stock_number',
+            'vehicle_details', 'buyer_name', 'buyer_phone', 'buyer_email',
+            'buyer_address', 'sale_price', 'amount_paid', 'balance',
+            'payment_status', 'payment_method', 'notes', 'sold_at',
+            'created_by_name', 'created_at',
+        ]
+        read_only_fields = [
+            'id', 'invoice_number', 'vehicle_description', 'stock_number',
+            'vehicle_details', 'created_at',
+        ]
+
+    def get_created_by_name(self, obj):
+        user = obj.created_by
+        if not user:
+            return ''
+        return user.get_full_name() or user.get_username()
+
+    def validate_car(self, value):
+        if self.instance is None:
+            if value is None:
+                raise serializers.ValidationError('Choose the vehicle that was sold.')
+            if Sale.objects.filter(car=value).exists():
+                raise serializers.ValidationError(
+                    'This vehicle already has a sale and an invoice.'
+                )
+        return value
+
+    def validate(self, attrs):
+        creating = self.instance is None
+        car = attrs.get('car')
+
+        if creating and car is None:
+            raise serializers.ValidationError({'car': 'Choose the vehicle that was sold.'})
+        if creating and 'sale_price' not in attrs and car is not None:
+            attrs['sale_price'] = car.price
+
+        price = attrs.get('sale_price', getattr(self.instance, 'sale_price', None))
+        paid = attrs.get('amount_paid', getattr(self.instance, 'amount_paid', 0))
+        if price is not None and paid is not None and paid > price:
+            raise serializers.ValidationError(
+                {'amount_paid': 'The amount paid cannot be more than the sale price.'}
+            )
+        return attrs
+
+    def create(self, validated_data):
+        from django.db import transaction
+
+        car = validated_data['car']
+        request = self.context.get('request')
+
+        with transaction.atomic():
+            validated_data.update(vehicle_snapshot(car))
+            if request and request.user.is_authenticated:
+                validated_data['created_by'] = request.user
+            sale = super().create(validated_data)
+
+            # A sold vehicle must no longer appear on the website
+            if car.is_available:
+                car.is_available = False
+                car.save(update_fields=['is_available'])
+        return sale
+
+    def update(self, instance, validated_data):
+        validated_data.pop('car', None)  # the vehicle cannot be swapped later
+        return super().update(instance, validated_data)
+
+
+# ---------------------------------------------------------------------------
+# Announcements to sales representatives
+# ---------------------------------------------------------------------------
+
+class AnnouncementSerializer(serializers.ModelSerializer):
+    recipient_ids = serializers.ListField(
+        child=serializers.IntegerField(), write_only=True, required=False
+    )
+    sent_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Announcement
+        fields = [
+            'id', 'subject', 'message', 'recipient_ids', 'recipients',
+            'sent_by_name', 'sent_count', 'failed_count', 'failures',
+            'real_delivery', 'created_at',
+        ]
+        read_only_fields = [
+            'id', 'recipients', 'sent_by_name', 'sent_count', 'failed_count',
+            'failures', 'real_delivery', 'created_at',
+        ]
+        extra_kwargs = {
+            'subject': {'max_length': 200},
+            'message': {'max_length': 5000},
+        }
+
+    def get_sent_by_name(self, obj):
+        user = obj.sent_by
+        if not user:
+            return ''
+        return user.get_full_name() or user.get_username()
+
+    def validate_subject(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError('Please enter a subject.')
+        return value
+
+    def validate_message(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError('Please write a message.')
+        return value

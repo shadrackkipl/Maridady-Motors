@@ -4,6 +4,10 @@ import AdminLayout from "../components/admin/AdminLayout";
 import AdminDashboard from "../components/admin/AdminDashboard";
 import AdminStaff from "../components/admin/AdminStaff";
 import AdminSalesReps from "../components/admin/AdminSalesReps";
+import AdminInquiries from "../components/admin/AdminInquiries";
+import AdminSales from "../components/admin/AdminSales";
+import AdminInvoice from "../components/admin/AdminInvoice";
+import AdminAnnouncements from "../components/admin/AdminAnnouncements";
 
 /**
  * Main page of the admin panel. App.jsx mounts it at /admin-panel/*, so the
@@ -14,8 +18,14 @@ const Admin = () => {
   return (
     <Routes>
       <Route element={<StaffRoute requireSuperuser />}>
+        {/* The invoice is a full page so it prints cleanly */}
+        <Route path="sales/:id/invoice" element={<AdminInvoice />} />
+
         <Route element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
+          <Route path="inquiries" element={<AdminInquiries />} />
+          <Route path="sales" element={<AdminSales />} />
+          <Route path="announcements" element={<AdminAnnouncements />} />
           <Route path="staff" element={<AdminStaff />} />
           <Route path="sales-reps" element={<AdminSalesReps />} />
         </Route>

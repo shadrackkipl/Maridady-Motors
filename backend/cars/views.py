@@ -7,15 +7,22 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import (
     api_view,
+    authentication_classes,
     parser_classes,
     permission_classes,
+    throttle_classes,
 )
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle
 
 from .models import Car, SalesRepresentative
-from .serializers import CarSerializer, SalesRepresentativeSerializer
+from .serializers import (
+    CarSerializer,
+    InquiryCreateSerializer,
+    SalesRepresentativeSerializer,
+)
 
 # Only show active sales representatives on vehicles
 ACTIVE_REPS = Prefetch(
@@ -125,3 +132,34 @@ def sales_rep_list(request):
         reps, many=True, context={'request': request}
     )
     return Response(serializer.data)
+
+
+class InquiryThrottle(AnonRateThrottle):
+    """At most 10 requests an hour from one visitor, to stop spam."""
+
+    scope = 'inquiry'
+    rate = '10/hour'
+
+
+@api_view(['POST'])
+@authentication_classes([])  # public: an old or expired login must not block it
+@permission_classes([AllowAny])
+@throttle_classes([InquiryThrottle])
+def create_inquiry(request):
+    """A customer sends a request about a vehicle (or a general question)."""
+    # Honeypot: real visitors never see or fill this hidden field, bots do
+    if request.data.get('website'):
+        return Response({'message': 'Thank you!'}, status=status.HTTP_201_CREATED)
+
+    serializer = InquiryCreateSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(
+        {
+            'message': (
+                'Thank you! Your request has been received. '
+                'We will contact you shortly.'
+            )
+        },
+        status=status.HTTP_201_CREATED,
+    )

@@ -8,7 +8,15 @@ from django.utils.html import format_html
 from unfold.admin import ModelAdmin, TabularInline
 from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationForm
 
-from .models import Car, CarImage, SalesRepresentative, StaffMember
+from .models import (
+    Announcement,
+    Car,
+    CarImage,
+    Inquiry,
+    Sale,
+    SalesRepresentative,
+    StaffMember,
+)
 from .staff import STAFF_GROUP_NAME, ensure_staff_group
 
 User = get_user_model()
@@ -97,7 +105,7 @@ class CarAdmin(ModelAdmin):
 @admin.register(SalesRepresentative)
 class SalesRepresentativeAdmin(ModelAdmin):
     list_display = (
-        'photo_thumbnail', 'name', 'phone', 'whatsapp_number', 'order',
+        'photo_thumbnail', 'name', 'phone', 'whatsapp_number', 'email', 'order',
         'is_active',
     )
     list_editable = ('order', 'is_active')
@@ -161,3 +169,27 @@ class StaffMemberAdmin(BaseUserAdmin, ModelAdmin):
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)
         form.instance.groups.add(ensure_staff_group())
+
+
+@admin.register(Inquiry)
+class InquiryAdmin(ModelAdmin):
+    list_display = ('name', 'phone', 'vehicle_label', 'status', 'created_at')
+    list_filter = ('status',)
+    search_fields = ('name', 'phone', 'email', 'vehicle_label')
+    readonly_fields = ('created_at',)
+
+
+@admin.register(Sale)
+class SaleAdmin(ModelAdmin):
+    list_display = (
+        'invoice_number', 'vehicle_description', 'buyer_name',
+        'sale_price', 'amount_paid', 'sold_at',
+    )
+    search_fields = ('invoice_number', 'buyer_name', 'vehicle_description')
+    readonly_fields = ('invoice_number', 'created_at')
+
+
+@admin.register(Announcement)
+class AnnouncementAdmin(ModelAdmin):
+    list_display = ('subject', 'sent_by', 'sent_count', 'failed_count', 'created_at')
+    readonly_fields = ('created_at',)
