@@ -13,11 +13,12 @@ from rest_framework.decorators import (
     throttle_classes,
 )
 from rest_framework.parsers import FormParser, MultiPartParser
-from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 
 from .models import Car, SalesRepresentative
+from .staff_views import CarStaffPermission
 from .serializers import (
     CarSerializer,
     InquiryCreateSerializer,
@@ -107,7 +108,7 @@ def car_detail(request, pk):
 
 
 @api_view(['POST'])
-@permission_classes([IsAdminUser])
+@permission_classes([CarStaffPermission])
 @parser_classes([MultiPartParser, FormParser])
 def add_car(request):
     serializer = CarSerializer(data=request.data, context={'request': request})
